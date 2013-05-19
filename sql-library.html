@@ -1,0 +1,56 @@
+<head>
+	<title>SQL Library, with Script Builder</title>
+</head>
+
+<body>
+	<div class="container-fluid">
+		{{> page_header}}	
+		<div class="row-fluid span12">
+			<div class="span2">
+				{{> side_bar}}				
+			</div>
+			<div id="main" class="span10">
+				{{> welcome_screen}}
+			</div>
+		</div>
+	</div>
+</body>
+
+<template name="side_bar">
+	<div class="tabbable tabs-left">
+		<ul class="nav nav-tabs">
+			<li id="launch_build"><a href="#build" data-toggle="tab">Script Builder</a></li>
+			<li id="launch_search"><a href="#search"  data-toggle="tab">Search Metrics</a></li>
+			<li id="launch_explore"><a href="#explore" data-toggle="tab">Database Explorer</a></li>	
+			<li id="launch_create"><a href="#create"data-toggle="tab">Create Metric</a></li>				
+			<li id="launch_modify"><a href="#modify" data-toggle="tab">Modify Metric</a></li>	
+			<li id="launch_settings"><a href="#settings" data-toggle="tab">Settings</a></li>
+			<li id="launch_feedback"><a href="#feedback" data-toggle="tab">Feedback</a></li>
+			<li id="launch_docs"><a href="#docs" data-toggle="tab">Documentation</a></li>
+		</ul>
+	</div>
+</template>
+
+<template name="welcome_screen">
+	<div class="hero-unit span10">
+		<h1>Welcome, {{current_user}}.</h1>
+		<p>To get started, choose an option to the left or click on the Tutorial button below.</p>
+		<p>
+			<a class="btn btn-primary btn-large">Tutorial</a>
+		</p>	
+	</div>
+</template>
+<template name="page_header">
+	<div class="page-header row-fluid span12">
+		<h1 class="span9 btn-link" id="page_header">SQL Library, with Script Builder</h1>
+		<h3 class="span3">{{loginButtons}}</h3>
+	</div>
+</template>		
+
+				
+					
+					
+					
+					
+					
+					

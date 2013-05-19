@@ -1,0 +1,41 @@
+#add_preview
+{
+border: 2px black;
+border-radius: 10px;
+}
+
+.card, .explorer_header, .table_info
+{
+	overflow: hidden;
+}
+
+.submit_field
+{
+	overflow: hidden;
+}
+
+#create_header
+{
+	border-bottom:1px black;
+}
+
+.script_stack
+{
+	overflow: hidden;
+}
+
+.script_entity
+{
+	overflow: hidden;
+}
+
+.table
+{
+	width : 100%;
+}
+
+.field_result
+{
+	white-space : normal;
+	word-break: break-all;
+}

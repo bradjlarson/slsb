@@ -1,0 +1,65 @@
+<template name="explorer">
+	<div class="span3">
+		<h4 class="page-header explorer_header">Databases:</h4>
+		<div class="input-append explorer_search">
+		  <input id="db_search" type="text" placeholder="database_name" class="input-medium">
+		  <button id="db_query" class="btn btn-inverse" type="button">Search</button>
+		</div>
+		<div class="span3">
+			<table class="table table-condensed table-hover table-bordered">
+			{{#each databases}}
+				<tr class="db_results" name="{{database_name}}">
+					<td>{{database_name}}</td>
+				</tr>
+			{{/each}}	
+			</table>
+		</div>
+	</div>
+	<div class="span3">
+		<h4 class="page-header explorer_header">Tables:</h4>
+		<div class="input-append explorer_search">
+		  <input id="table_search" type="text" placeholder="table_name" class="input-medium">
+		  <button id="table_query" class="btn btn-inverse" type="button">Search</button>
+		</div>
+		<div class="span3">
+			{{#isolate}}
+			{{#if db_selected}}
+			<table class="table table-condensed table-hover table-bordered">	
+				{{#each tables}}
+				<tr class="table_results" name="{{table_name}}">
+					<td>{{table_name}}</td>
+				</tr>
+				{{/each}}
+			</table>
+			{{/if}}
+			{{/isolate}}
+		</div>
+	</div>
+
+	<div class="span5">
+		{{#isolate}}
+		{{#if table_selected}}		
+		<div class="table_info">
+				{{#each selected_table}}
+				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
+				<p>{{table_desc}}</p>
+				{{/each}}
+		</div>
+		<div class="table_info">			
+		<h5 class="page-header explorer_header">Columns:</h5>
+		</div>
+		<div class="">
+			<table class="table table-condensed table-hover table-bordered">
+			{{#each columns}}
+				<tr class="db_columns" name="{{column_name}}">
+					<td>{{column_name}}</td>
+					<td>{{column_desc}}</td>
+				</tr>
+			{{/each}}
+			</table>
+		</div>
+		{{/if}}
+		{{/isolate}}
+	</div>
+</template>					
+		

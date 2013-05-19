@@ -1,0 +1,72 @@
+<template name="search">
+	<div id="search_bar">
+		<form id="metric_search_form" class="form-search">
+			<input type="text" id="metric_querybox" class="input-medium search-query" placeholder="field:condition">
+			<button id="query_metrics" class="btn btn-inverse">Search</button>
+		 	<button class="btn btn-inverse">Advanced</button>
+		</form>
+	</div>
+	<div id="results">
+		<table class="table">
+		{{#isolate}}	
+		{{#each search_results}}
+		<tr>
+			<td>
+			<div class="card" class="">
+				<div class="span6">
+				<table class="table table-bordered">
+					<tr class="info">
+						<td><b>Metric Name:</b></td>
+						<td class="field_result">{{metric_name}}</td>
+					</tr>
+					<tr>
+						<td><b>Columns Added:</b></td>
+						<td class="field_result">{{cols_added}}</td>
+					</tr>
+					<tr>
+						<td><b>Join Source:</b></td>
+						<td class="field_result">{{join_src}}</td>
+					</tr>
+					<tr>
+						<td><b>Available Join Columns:</b></td>
+						<td class="field_result">{{join_cols}}</td>
+					</tr>
+					<tr>
+						<td><b>Extra SQL:</b></td>
+						<td class="field_result">{{extra_sql}}</td>
+					</tr>
+					<tr>
+						<td><b>Indices:</b></td>
+						<td class="field_result">{{indices}}</td>
+					</tr>
+					<tr>
+						<td><b>Preparatory SQL:</b></td>
+						<td class="field_result">{{prep_sql}}</td>
+					</tr>
+					<tr>
+						<td><b>Preview:</b></td>
+						<td class="field_result"><b>{{preview}}</b></td>
+					</tr>
+				</table>
+				</div>
+				<div class="span4">
+				<table class="table table-bordered">
+					<tr>
+						<td><b>Collection:</b></td>
+						<td class="field_result">{{collection}}</td>
+					</tr>
+					<tr>
+						<td><b>Description:</b></td>
+						<td class="field_result">{{description}}</td>
+					</tr>
+					<tr>
+				</table>
+				<button id="add_explorer_metric" name="{{_id}}" class="btn btn-inverse">Add to Script</button>
+			</div>			
+			</div>
+			</td>
+		</tr>	
+		{{/each}}
+		{{/isolate}}
+	</div>
+</template>

@@ -1,0 +1,48 @@
+<template name="script_builder">
+	<div class="row-fluid span10">
+		<div class="span5">
+			<h3 class="text-center page-header">Script Builder:</h3>
+		</div>
+		<div class="span5">
+			<h3	class="text-center page-header">Script Preview:
+				<button id="clear_current_script" class="btn btn-inverse btn-small pull-right">Clear</button>
+				<div class="dropdown pull-right"><a id="script_metrics" class="btn btn-inverse btn-small pull-right dropdown-toggle" data-toggle="dropdown" href="#">Metrics<span class="caret"></span></a>
+					<ul class="dropdown-menu pull-right" role="menu">
+					{{#each current_script}}
+						<li><a tabindex="-1"><small>{{metric_name}}</small><button id="{{_id}}" class="close remove_script_metric">&times;</button></a></li>
+					{{/each}}
+					</ul>
+				</div>	
+			</h3>
+		</div>
+	</div>
+	<div class="row-fluid span10">
+		<div class="span5">
+{{#isolate}}	
+<pre class="pre-scrollable">
+>Please enter a command below to get started
+{{#each current_script}}
+>{{command}}
+>>>{{output_text}}{{/each}}
+</pre>
+{{/isolate}}
+			{{#isolate}}
+			<div>
+				<p>{{pre_run}}</p>
+			</div>
+			{{/isolate}}
+			<div>
+				<textarea rows="4" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
+			</div>
+		</div>
+		<div class="span5">
+{{#isolate}}			
+<pre>
+{{#each current_script}}
+{{sql_output}}
+{{/each}}					
+</pre>
+{{/isolate}}
+		</div>
+	</div>	
+</template>			
