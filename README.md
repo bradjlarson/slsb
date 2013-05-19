@@ -1,5 +1,3 @@
-slsb
-====
 
 #SQL Library and Script Builder
 
