@@ -13,6 +13,53 @@ if (Meteor.isServer) {
 	
 var help_text = "\tThe add_metric command is used to add a metric to your current script. It has the following syntax: \nadd_metric(which_metric,append_to_which_table,{join:on});\n\t>which_metric is the name of the metric you\'d like to add \n\t>append_to_which_table is the name of the table you\'d like to add the information to \n\t>>The script structure assumes a driver table that you append additional data points onto \n\t>>Enter your driver table name for the first table, or last to add it to the last table in your script \n\t>{join:on} are your join conditions, surrounded by { and } and separated by : \n\t>>Join conditions are limited by first N in the add_metric argument\n";
 
+Meteor.methods = ({
+	'remove_docs' : function() {
+		var doc_files = docs.find({}).fetch();
+		for (file in doc_files) 
+		{
+			docs.remove(doc_files[file]["_id"]);
+		}
+	},
+	'insert_docs' : function() {
+		docs.insert({topic_name : 'Introduction ', order : 1});
+		docs.insert({topic_name : '--What ', order : 2});
+		docs.insert({topic_name : '--Why ', order : 3});
+		docs.insert({topic_name : '--How ', order : 4});
+		docs.insert({topic_name : '--Where ', order : 5});
+		docs.insert({topic_name : 'Core Functions ', order : 6});
+		docs.insert({topic_name : '--Script Builder ', order : 7});
+		docs.insert({topic_name : '--Search Metrics ', order : 8});
+		docs.insert({topic_name : '--Database Explorer ', order : 9});
+		docs.insert({topic_name : '--Create Metric ', order : 10});
+		docs.insert({topic_name : '--Modify Metric ', order : 11});
+		docs.insert({topic_name : '--Settings ', order : 12});
+		docs.insert({topic_name : '--Feedback ', order : 13});
+		docs.insert({topic_name : '--Documentation ', order : 14});
+		docs.insert({topic_name : '--Admin ', order : 15});
+		docs.insert({topic_name : '--Stored Scripts ', order : 16});
+		docs.insert({topic_name : 'Core Commands ', order : 17});
+		docs.insert({topic_name : '--General syntax ', order : 18});
+		docs.insert({topic_name : '--add_metric', order : 19});
+		docs.insert({topic_name : '--create_metric', order : 20});
+		docs.insert({topic_name : '--create', order : 21});
+		docs.insert({topic_name : '--select', order : 22});
+		docs.insert({topic_name : '--comment', order : 23});
+		docs.insert({topic_name : '--help', order : 24});
+		docs.insert({topic_name : '--chain', order : 25});
+		docs.insert({topic_name : '--find', order : 26});
+		docs.insert({topic_name : 'Theory ', order : 27});
+		docs.insert({topic_name : '--Modularity ', order : 28});
+		docs.insert({topic_name : '--Convention over Configuration ', order : 29});
+		docs.insert({topic_name : '--Temporary Tables ', order : 30});
+		docs.insert({topic_name : 'Settings ', order : 31});
+		docs.insert({topic_name : '--Create vs. Update Mode ', order : 32});
+		docs.insert({topic_name : '--Formatting Option Sets ', order : 33});
+		docs.insert({topic_name : 'General SQL Resources ', order : 34});
+		return 'docs inserted';
+	}
+});
+
 //help_docs.insert({topic_name : "add_metric", help_text : help_text});
 
 }
@@ -63,7 +110,10 @@ Template.side_bar.events = {
 		Session.set("search_condition", null);
 		Session.set("search_field", null);},
 	'click #launch_build' : function(event) {
-		$('#main').html(Meteor.render(Template.script_builder));},
+		$('#main').html(Meteor.render(Template.script_builder));
+		Session.set("current_command", false);
+		Session.set("history_num", 0);
+		},
 	'click #launch_explore' : function(event) {
 		$('#main').html(Meteor.render(Template.explorer));
 		Session.set('db_searched', false);

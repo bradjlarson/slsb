@@ -40,6 +40,18 @@ Template.explorer.events = {
 		var query_val = $('#table_search').val();
 		Session.set("table_searched", query_val);
 		console.log(query_val);
+	},
+	'change .table-editable' : function(event) {
+		var doc_id = $(event.target).attr("name");
+		var new_desc = $(event.target).val();
+		console.log(new_desc);
+		tables.update(doc_id,{$set : {table_desc : new_desc}});
+	},
+	'change .col-editable' : function(event) {
+		var doc_id = $(event.target).attr("name");
+		var new_desc = $(event.target).val();
+		console.log(new_desc);
+		columns.update(doc_id, {$set : {column_desc : new_desc}});
 	}		
 }
 

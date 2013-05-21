@@ -1,9 +1,9 @@
 <template name="modify">
 	<div class="span3">
-		<form class="form-search">
-			<input id="modify_query" type="text" class="input-medium search-query" placeholder="field:condition">
+		<div class="input-append">
+			<input id="modify_query" type="text" class="input-medium" placeholder="field:condition">
 			<button id="modify_search" class="btn btn-inverse">Search</button>
-		</form>
+		</div>
 		<div>
 			<table class="table table-condensed table-bordered">
 				{{#each metrics}}

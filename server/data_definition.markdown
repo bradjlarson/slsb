@@ -93,8 +93,6 @@ DB Explorer:
 	table_selected
 	
 Script Builder:
-	metric_searched_b,
-	current_metric_b,
 	current_command,
 	history_num
 	

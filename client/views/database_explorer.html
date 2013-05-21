@@ -42,7 +42,7 @@
 		<div class="table_info">
 				{{#each selected_table}}
 				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
-				<p>{{table_desc}}</p>
+				<p class="db_editable" name="{{_id}}"><textarea class="table-editable span12" name="{{_id}}">{{table_desc}}</textarea></p>
 				{{/each}}
 		</div>
 		<div class="table_info">			
@@ -53,7 +53,7 @@
 			{{#each columns}}
 				<tr class="db_columns" name="{{column_name}}">
 					<td>{{column_name}}</td>
-					<td>{{column_desc}}</td>
+					<td class="db_editable" name="{{_id}}"><input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"></td>
 				</tr>
 			{{/each}}
 			</table>

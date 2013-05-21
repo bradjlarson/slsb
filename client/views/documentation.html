@@ -1,6 +1,11 @@
-<template name="docs">
-	<div class="row-fluid span10">
-		<p class="text-right"><a class="text-right btn btn-primary">Table of Contents</a></p>
+<template name="docs_old">
+	
+	<div class="span2 slsb-docs-sidebar affix">
+		<ul class="nav nav-list">
+		{{#each doc_file}}
+			<li><a href="#topic_{{order}}"><i class="icon-chevron-right"></i>{{topic_name}}</a></li>
+		{{/each}}
+		</ul>		
 	</div>
 	<div class="span10 hero-unit">
 		<h1>SQL Library Documentation:</h1>
@@ -13,3 +18,27 @@
 		</p>
 	</div>
 </template>
+
+<template name="docs">
+	<div class="dropdown span8 affix">
+		<a class="text-right btn btn-primary dropdown-toggle pull-right affix-top" data-toggle="dropdown" href="#">Table of Contents</a>
+		<ul class="dropdown-menu pull-right" role="menu">
+		{{#each doc_file}}
+			<li><a href="#topic_{{order}}"><i class="icon-chevron-right"></i> {{topic_name}}</a></li>
+		{{/each}}
+		</ul>
+	</div>	
+	<div class="span8" data-spy="affix">
+	{{#each doc_file}}
+		<section id="topic_{{order}}">
+			<div class="page-header">
+				<h2 class="docs_header">{{topic_name}}:<input class="input-xxlarge docs_edit" value="{{topic_header}}" name="topic_header.{{_id}}"></h2>
+			</div>
+			<div class="docs_body">
+				<textarea class="span12 docs_edit" rows="6" value="{{topic_body}}", name="topic_body.{{_id}}">{{topic_body}}</textarea>
+			</div>
+		</section>
+	{{/each}}
+	</div>
+</template>						
+	

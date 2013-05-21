@@ -13,7 +13,7 @@ Template.script_builder.command = function() {
 }
 */
 Template.script_builder.current_script = function() {
-	return build_commands.find({user_id: Meteor.userId(), success: true}, {$sort: {command_time: 1}});
+	return build_commands.find({user_id: Meteor.userId()}, {$sort: {command_time: 1}});
 }
 
 Template.script_builder.all_metrics = function() {
@@ -26,6 +26,26 @@ Template.script_builder.pre_run = function() {
 	{
 		return Session.get("pre_run_error");
 	}
+}
+
+Template.script_builder.chistory = function() {
+	return Session.get("current_command");
+}
+
+Template.script_builder.current_command = function() {
+	if (Session.get("current_command"))
+	{
+		var num = Session.get("history_num");
+		return build_commands.find({},{$sort : {command_time : -1}}).fetch()[0][num];
+	}
+	else
+	{
+		return "";
+	}
+}
+
+Template.script_builder.key_cuts = function() {
+	Mousetrap.bind('up', function() {var current_num = Session.get("history_num"); var new_num = current_num ++; Session.set("history_num", new_num);});
 }
 
 /////////////////////////////////////////////////
@@ -52,7 +72,6 @@ Template.script_builder.events = {
 		console.log(metric_id);
 		build_commands.remove(metric_id);
 	},
-	
 }
 
 function pre_run_check(command) {
@@ -152,7 +171,8 @@ function add_metric(args) {
 						metric_name : metric_name,
 						command_block : Session.get("current_command")	
 						};
-	console.log(build_constructor);					
+	console.log(build_constructor);
+	metric_library.update(metric['_id'], {$inc : {used : 1}});					
 	build_commands.insert(build_constructor);									
 }
 
@@ -318,7 +338,63 @@ function extra_sql(text){
 	}
 }
 
-function create_metric(args) {
+function create_metric(args) { 
+	//This function take an argument string containing the following:
+	//  -metric_name : Metric Name
+	//  -cols_added : Columns from join table you'd like to append to future table
+	//  -join_src : Table or query that data resides in
+	//  -join_cols : Columns that future queries can join on (in order of importance)
+	//  -indices : Primary index (note the order difference)
+	//  -extra_sql : Any additional conditions: where, and, group by, order by (optional)
+	var metric_constructor = {};
+	var today = new Date();
+	var datetime = today.today()+" @ "+today.timeNow();
+	metric_constructor["metric_name"] = args[0];
+	if (metric_library.find({metric_name : metric_constructor.metric_name}).count() == 0)
+	{
+	metric_constructor["cols_added"] = args[1];
+	metric_constructor["join_src"] = args[2];
+	metric_constructor["join_cols"] = args[3];
+	metric_constructor["indices"] = args[4];
+	metric_constructor["extra_sql"] = args[5] ? args[5] : '--None';
+	metric_constructor["creator"] = Meteor.userId();
+	metric_constructor["create_time"] = datetime;
+	metric_library.insert(metric_constructor, function(err) {
+		if (!err) {
+			console.log('Metric Inserted');
+			//$('#create_metric_form')[0].reset();
+		}
+		else
+		{
+			console.log(err);
+		}
+	});
+	var output_text = "Metric: "+args[0]+" added to Metric Library!";
+	var build_constructor = {
+						user_id : Meteor.userId(),
+						command : "Create Metric: "+args[0],
+						command_time : datetime,
+						success : true,
+						output_text : output_text,
+						command_block : Session.get("current_command")	
+						};
+	console.log(build_constructor);					
+	build_commands.insert(build_constructor);
+	}
+	else
+	{
+		var output_text = "Metric: "+args[0]+" already exists, please choose another name.";
+		var build_constructor = {
+							user_id : Meteor.userId(),
+							command : "Create Metric: "+args[0],
+							command_time : datetime,
+							success : false,
+							output_text : output_text,
+							command_block : Session.get("current_command")	
+							};
+		console.log(build_constructor);					
+		build_commands.insert(build_constructor);
+	}
 	console.log(args);
 	console.log('create metric command');
 }
@@ -399,6 +475,7 @@ function selectify(arg) {
 }
 
 function left_str() {
+	//Still need to develop the syntax for left(string, num)
 	
 }
 
@@ -442,12 +519,88 @@ function chain(args) {
 	//Chain should only be used when the metrics share the same join condition.
 	//It is also useful for creating metric packages from the DB Explorer columns.
 	//If several metrics share the same join.src, they will be condensed into a single add_metric
+	//Currently, if multiple metrics add the same column name, only the first will be kept
 	console.log(args);
 	console.log('chain command');
+	var today = new Date();
+	var datetime = today.today()+" @ "+today.timeNow();
 	var name = args[0];
 	var metrics = args[1].replace('{','').replace('}','').split(':');
 	var conditions = args[2].replace('{','').replace('}','').split(':');
-	
+	var join_check = false;
+	var metric_constructor = {};
+	var cols_added = "";
+	var prep_sql = "";
+	var indice = "";
+	var cur_metric = [];
+	var success = 0;
+	var last_metric = "";
+	metric_constructor["metric_name"] = name;
+	metric_constructor["creator"] = Meteor.userId();
+	metric_constructor["create_time"] = datetime;
+	metric_constructor["join_cols"] = args[2];
+
+	//need to check if the metrics have the required join conditions
+	//will also need to check how many metrics match conditions
+	//Need to check if metrics can be condensed first (see if multiple metrics have same join.src);
+	for (metric in metrics)
+	{
+		cur_metric = metric_library.find({metric_name : metrics[metric]}).fetch()[0];
+		if (check(conditions, cur_metric.join_cols))
+		{
+			cols_added = merge(cols_added,cur_metric.cols_added);
+			prep_sql += build_prep_sql(cur_metric,last_metric,conditions); 
+			last_metric = "add_"+cur_metric.metric_name;
+			success ++;
+		}
+	}
+	metric_constructor["cols_added"] = cols_added;
+	metric_constructor["prep_sql"] = prep_sql;
+	metric_constructor["extra_sql"] = "--None";
+	metric_constructor["indices"] = cur_metric.indices;
+	metric_constructor["used"] = 0;
+	metric_library.insert(metric_constructor);
+	build_constructor = {
+		user_id : Meteor.userId(),
+		command : "Create chain metric: "+name,
+		command_time : datetime,
+		success : true,
+		output_text : "Chain created as Metric: "+name+"!",
+		command_block : Session.get("current_command")
+	};
+	build_commands.insert(build_constructor);
+		
+}
+
+function merge(chain, link) {
+	//this will make sure that no duplicate column names exist, and then merge into one cols_added pkg
+}
+
+function build_prep_sql(metric,last_metric,join_cols) {
+	if (last_metric)
+	{
+		//This handles the cases when there is more than 1 chain link, and this is the 2nd or greater link
+		var metric_cols = metric.join_cols.replace('{','').replace('}','').split(':');
+		var output_sql = "";
+		if (metric.prep_sql)
+		{
+			output_sql += prep_sql(metric.prep_sql)+"\n";
+		}
+		output_sql += 	"CREATE TABLE add_"+metric.metric_name+" as (\n"+
+						"SELECT a.*"+cols_added(metric.cols_added)+"\n"+
+						"FROM "+table_name(join_table)+" a\n"+
+						join_type(join_table)+metric.join_src+" b\n"+
+						add_join(metric_cols, join_cols)+
+						extra_sql(metric.extra_sql)+
+						") WITH DATA\n"+
+						"PRIMARY INDEX("+indices(metric.indices)+");\n";
+		return output_sql;
+	}
+	else
+	{
+		//This handles the case when there is more than 1 chain link, and this is the first link
+		//The normal sql is converted into a psuedo driver table, with a where x in (select x from y) to help with pull size;
+	}
 	
 }
 

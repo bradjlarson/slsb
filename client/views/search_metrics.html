@@ -1,10 +1,10 @@
 <template name="search">
 	<div id="search_bar">
-		<form id="metric_search_form" class="form-search">
-			<input type="text" id="metric_querybox" class="input-medium search-query" placeholder="field:condition">
+		<div class="input-append">
+			<input type="text" id="metric_querybox" class="input-medium" placeholder="field:condition">
 			<button id="query_metrics" class="btn btn-inverse">Search</button>
 		 	<button class="btn btn-inverse">Advanced</button>
-		</form>
+		</div>
 	</div>
 	<div id="results">
 		<table class="table">
@@ -60,8 +60,11 @@
 						<td class="field_result">{{description}}</td>
 					</tr>
 					<tr>
+						<td><b>Used:</b></td>
+						<td class="field_result">{{used}}</td>
+					</tr>
 				</table>
-				<button id="add_explorer_metric" name="{{_id}}" class="btn btn-inverse">Add to Script</button>
+				<button name="{{_id}}" class="btn btn-inverse add_explorer_metric">Add to Script</button>
 			</div>			
 			</div>
 			</td>

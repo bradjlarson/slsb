@@ -18,10 +18,10 @@ Template.search.events = {
 		}
 		return false;
 	},
-	'click #add_explorer_metric' : function(event) {
+	'click .add_explorer_metric' : function(event) {
 		var selected = event.target;
 		var metric_id = $(selected).attr('name');
-		var this_metric = metric_library.find({_id : metric_id}).fetch();
+		var this_metric = metric_library.find({_id : metric_id}).fetch()[0];
 		console.log(this_metric);
 		console.log(this_metric.metric_name)
 		//current_script.insert(this_metric);
