@@ -444,7 +444,7 @@ function selectify(arg) {
 	//
 	//The selectify function takes a : delimited package of columns or the * argument, which translates to select *
 	var options = {c : "count(", s : "sum(", a : "avg(", max : "max(", min : "min(" };
-	var opt_functions = {left : left_str, substr : sub_str};
+	//var opt_functions = {left : left_str, substr : sub_str};
 	var select_sql = "";
 	if (arg == '*')
 	{
@@ -493,6 +493,8 @@ function fromify(arg) {
 }
 
 function whereify(how) {
+if (how)
+{
 	//right now gb and ob take their arguments delimited by + (i.e gb/1+2+3+4+5)
 	options = {gb : 'group by ', ob : 'order by ', q : 'qualify row_number() over (partition by /parts/ order by /order/) /limit/ '};
 	var where_sql = '';
@@ -520,7 +522,13 @@ function whereify(how) {
 		}
 	}
 	//where_sql +=";";
-	return where_sql;
+	return where_sql ? where_sql : ' ';
+}
+else
+{
+	return ' ';
+}
+
 }
 
 function chain(args) {
