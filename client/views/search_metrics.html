@@ -1,4 +1,20 @@
 <template name="search">
+	<div id="search_add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="search-add-header" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+			<h3 id="search-add-header">Add Metric:</h3>
+		</div>
+		<div class="modal-body">
+			<div id="summary">
+				<textarea id="search-add-command" placeholder="add_metric(...);" class="span5" rows="15">add_metric(...);	
+				</textarea>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+			<button id="1.2" class="btn btn-success search-submit" data-dismiss="modal" aria-hidden="true">Submit</button>
+		</div>
+	</div>	
 	<div id="search_bar">
 		<div class="input-append">
 			<input type="text" id="metric_querybox" class="input-medium" placeholder="field:condition">
@@ -12,7 +28,7 @@
 		{{#each search_results}}
 		<tr>
 			<td>
-			<div class="card" class="">
+			<div class="card">
 				<div class="span6">
 				<table class="table table-bordered">
 					<tr class="info">

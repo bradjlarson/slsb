@@ -36,17 +36,26 @@ Template.script_builder.current_command = function() {
 	if (Session.get("current_command"))
 	{
 		var num = Session.get("history_num");
-		return build_commands.find({},{$sort : {command_time : -1}}).fetch()[0][num];
+		if (build_commands.find().fetch())
+		{
+			return build_commands.find({},{$sort : {command_time : -1}}).fetch()[0][num];
+		}
+		else
+		{
+			return "";
+		}
+		
 	}
 	else
 	{
 		return "";
 	}
 }
-
+/*
 Template.script_builder.key_cuts = function() {
 	Mousetrap.bind('up', function() {var current_num = Session.get("history_num"); var new_num = current_num ++; Session.set("history_num", new_num);});
 }
+*/
 
 /////////////////////////////////////////////////
 //Script Builder Events

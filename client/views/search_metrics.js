@@ -22,9 +22,16 @@ Template.search.events = {
 		var selected = event.target;
 		var metric_id = $(selected).attr('name');
 		var this_metric = metric_library.find({_id : metric_id}).fetch()[0];
+		$('#search_add').modal('show');
 		console.log(this_metric);
 		console.log(this_metric.metric_name)
 		//current_script.insert(this_metric);
+	},
+	'click .search-submit' : function(event) {
+		var command = $('#search-add-command').val();
+		console.log('search add');
+		script_eval(command);
+		$('#search_add').modal('hide');
 	}
 }
 
