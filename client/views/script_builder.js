@@ -160,17 +160,26 @@ function script_eval(command_block) {
 function add_metric(args) {
 	console.log('add metric command');
 	var metric_name = args[0];
+	var metric_name_only = '';
+	if (metric_name.indexOf('/') != -1)
+	{
+		metric_name_only = metric_name.slice(0,metric_name.indexOf('/'));
+	}
+	else
+	{
+		metric_name_only = metric_name;
+	}
 	var join_table = args[1];
 	var join_cols = args[2].replace('{','').replace('}','').split(':');
 	var option_set = args[3];
-	var metric = metric_library.find({metric_name : metric_name}).fetch()[0];
+	var metric = metric_library.find({metric_name : metric_name_only}).fetch()[0];
 	var metric_cols = metric.join_cols.replace('{','').replace('}','').split(':');
 	var output_sql = "";
 	if (metric.prep_sql)
 	{
 		output_sql += prep_sql(metric.prep_sql)+"\n";
 	}
-	output_sql += 	"CREATE TABLE add_"+metric.metric_name+" as (\n"+
+	output_sql += 	"CREATE "+table_type("add_"+metric_name)+" AS (\n"+
 					"SELECT a.*"+cols_added(metric.cols_added)+"\n"+
 					"FROM "+table_name(join_table)+" a\n"+
 					join_type(join_table)+metric.join_src+" b\n"+
@@ -189,7 +198,7 @@ function add_metric(args) {
 						success : true,
 						output_text : output_text,
 						sql_output : output_sql,
-						metric_name : metric_name,
+						metric_name : metric_name_only,
 						command_block : Session.get("current_command")	
 						};
 	console.log(build_constructor);
@@ -484,11 +493,11 @@ function table_type(table) {
 			console.log(options[type[opt]]);
 			table_sql += options[type[opt]]+" "; 
 		}
-		table_sql += table;
+		table_sql += "TABLE "+table;
 	}
 	else
 	{
-		table_sql += table;
+		table_sql += "TABLE "+table;
 	}
 	return table_sql;
 }
