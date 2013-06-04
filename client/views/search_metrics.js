@@ -20,8 +20,10 @@ Template.search.events = {
 	},
 	'click .add_explorer_metric' : function(event) {
 		var selected = event.target;
-		var metric_id = $(selected).attr('name');
+		var metric_id = $(selected).attr('id');
+		var metric_name = $(selected).attr('name');
 		var this_metric = metric_library.find({_id : metric_id}).fetch()[0];
+		$('#search-add-command').val('add_metric('+metric_name+',');
 		$('#search_add').modal('show');
 		console.log(this_metric);
 		console.log(this_metric.metric_name)
@@ -30,7 +32,11 @@ Template.search.events = {
 	'click .search-submit' : function(event) {
 		var command = $('#search-add-command').val();
 		console.log('search add');
-		script_eval(command);
+		console.log(command);
+		if (command)
+		{
+			script_eval(command);			
+		}
 		$('#search_add').modal('hide');
 	}
 }

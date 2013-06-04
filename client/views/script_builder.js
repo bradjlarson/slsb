@@ -83,6 +83,13 @@ Template.script_builder.events = {
 	},
 }
 
+
+
+
+
+
+
+
 function pre_run_check(command) {
 	console.log(command.indexOf('//'));
 	if (command.indexOf(';') == -1)
@@ -114,6 +121,7 @@ run['create_metric'] = create_metric;
 run['select'] = select;
 run['chain'] = chain;
 run['help'] = help;
+run['create'] = create;
 
 function script_eval(command_block) {
 	//This works for now, but the split method forces a new delimiter for each level. 
@@ -144,6 +152,10 @@ function script_eval(command_block) {
 		}	
 	}	
 }
+
+/////////////////////////////////
+//	Add Metric Command functions
+/////////////////////////////////
 
 function add_metric(args) {
 	console.log('add metric command');
@@ -306,8 +318,11 @@ function join_cols(cols) {
 		}
 		return col_string;
 	}
+	else
+	{
+		return '';
+	}
 }
-
 function indices(cols) {
 	var separate_cols = cols.split(':');
 	var col_string = '';
@@ -346,6 +361,10 @@ function extra_sql(text){
 		return "";
 	}
 }
+
+/////////////////////////////////
+//	Create Metric Functions
+/////////////////////////////////	
 
 function create_metric(args) { 
 	//This function take an argument string containing the following:
@@ -407,6 +426,77 @@ function create_metric(args) {
 	console.log(args);
 	console.log('create metric command');
 }
+
+/////////////////////////////////
+//	Create Functions
+/////////////////////////////////
+
+function create(args) {
+	//This command is basically a select command, with a few extra arguments (table name, {indices})
+	console.log(args);
+	console.log('create command');
+	var table_name = args[0];
+	var what = args[1];
+	var where = args[2];
+	var how = args[3];
+	var indices_pkg = args[4];
+	var output_sql = "CREATE "+table_type(table_name)+" AS (\n";
+	output_sql += "SELECT "+selectify(what)+"\n";
+	output_sql += fromify(where)+"\n";
+	output_sql += whereify(how);
+ 	if (indices_pkg)
+	{
+		output_sql += ") WITH DATA\n"+"PRIMARY INDEX("+indices(indices_pkg)+");\n";
+	}
+	else
+	{
+		output_sql += ") WITH DATA;\n";
+	}
+	var success = true;
+	var today = new Date();
+	var datetime = today.today()+" @ "+today.timeNow();
+	var output_text = "Create table: "+table_name+" added to script!";
+	var build_constructor = {
+						user_id : Meteor.userId(),
+						command : "Create table: "+table_name,
+						command_time : datetime,
+						success : true,
+						output_text : output_text,
+						sql_output : output_sql,
+						metric_name : 'Create Table',
+						command_block : Session.get("current_command")	
+						};
+	console.log(build_constructor);					
+	build_commands.insert(build_constructor);
+}
+
+function table_type(table) {
+	var options = {v : "VOLATILE", m : "MULTISET", t : "TEMPORARY"};
+	var table_sql = '';
+	if (table.indexOf('/') != -1) 
+	{
+		var type = table.slice(table.indexOf('/')+1).split('+');
+		var table = table.slice(0,table.indexOf('/'));
+		console.log(type);
+		console.log(table);
+		for (opt in type)
+		{
+			console.log(options[type[opt]]);
+			table_sql += options[type[opt]]+" "; 
+		}
+		table_sql += table;
+	}
+	else
+	{
+		table_sql += table;
+	}
+	return table_sql;
+}
+
+
+/////////////////////////////////
+//	Select Functions
+/////////////////////////////////
 
 function select(args) {
 	//Basic structure will be select({what},from where,{how});
@@ -483,11 +573,6 @@ function selectify(arg) {
 	}
 }
 
-function left_str() {
-	//Still need to develop the syntax for left(string, num)
-	
-}
-
 function fromify(arg) {
 	return 'FROM '+arg;
 }
@@ -496,13 +581,13 @@ function whereify(how) {
 if (how)
 {
 	//right now gb and ob take their arguments delimited by + (i.e gb/1+2+3+4+5)
-	options = {gb : 'group by ', ob : 'order by ', q : 'qualify row_number() over (partition by /parts/ order by /order/) /limit/ '};
+	var options = {gb : 'group by ', ob : 'order by ', q : 'qualify row_number() over (partition by /parts/ order by /order/) /limit/ '};
 	var where_sql = '';
 	var args = how.replace('{','').replace('}','').split(':');
+	var i = 1;
 	for (arg in args) {
 		var opt = args[arg].slice(0,args[arg].indexOf('/'));
 		var condition = args[arg].slice(args[arg].indexOf('/')+1).replace('+',',');
-		var i = 1;
 		if (args[arg].indexOf('/') == -1)
 		{
 			if(i == 1)
@@ -530,6 +615,10 @@ else
 }
 
 }
+
+/////////////////////////////////
+//	Chain Functions
+/////////////////////////////////
 
 function chain(args) {
 	//Basic structure will be chain(chain_name,{metrics:here},{chain:conditions);
@@ -589,9 +678,7 @@ function chain(args) {
 		
 }
 
-function merge(chain, link) {
-	//this will make sure that no duplicate column names exist, and then merge into one cols_added pkg
-}
+
 
 function build_prep_sql(metric,last_metric,join_cols) {
 	if (last_metric)
@@ -620,6 +707,10 @@ function build_prep_sql(metric,last_metric,join_cols) {
 	}
 	
 }
+
+/////////////////////////////////
+//	Help Functions
+/////////////////////////////////
 
 function help(args) {
 	//Basic structure will be help(main_topic,sub_topic (optional));
@@ -651,6 +742,10 @@ find :
 save : 
 */
 }
+
+/////////////////////////////////
+//	Comment Functions
+/////////////////////////////////
 
 function comment(text){
 	//Posts a comment to the current script in the single line format (i.e. --Comment Text)
