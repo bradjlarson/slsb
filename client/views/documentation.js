@@ -8,8 +8,10 @@ Template.docs.events = {
 	'change .docs_edit' : function(event) {
 		var doc_name = $(event.target).attr("name");
 		var doc_id = doc_name.split('.')[1];
+		console.log(doc_id);
 		var update_val = $(event.target).val();
 		var doc_field = doc_name.split('.')[0];
+		console.log(doc_field);
 		if (doc_field == "topic_header")
 		{
 			docs.update(doc_id, {$set : {topic_header : update_val}});

@@ -83,13 +83,6 @@ Template.script_builder.events = {
 	},
 }
 
-
-
-
-
-
-
-
 function pre_run_check(command) {
 	console.log(command.indexOf('//'));
 	if (command.indexOf(';') == -1)
@@ -122,6 +115,15 @@ run['select'] = select;
 run['chain'] = chain;
 run['help'] = help;
 run['create'] = create;
+
+function parse(command_block) {
+	//Need to be able to split command block more intelligently. 
+	//Ideally I'd like it to recognize quotations, parentheses sets, bracket sets, and then use that information to generate the arguments
+	//This will probably be rather difficult
+	var command = command_block.slice(0,command_block.indexOf('('));
+	
+
+}
 
 function script_eval(command_block) {
 	//This works for now, but the split method forces a new delimiter for each level. 
@@ -156,6 +158,18 @@ function script_eval(command_block) {
 /////////////////////////////////
 //	Add Metric Command functions
 /////////////////////////////////
+
+//Auxiliary Functions associated with add_metric command:
+//join_type : determines type of join used in the add_ table
+//table_name : strips options, returns plain table name (probably not necessary)
+//add_join : builds join conditions for add_ table
+//in_builder : builds in option for a join condition
+//comparison : allows for join conditions other than = (which is the default)
+//cols_added : builds select stmt of add_ table
+//join_cols : appears to be an outdated version of add_join (probably can be removed)
+//indices : builds indices SQL (also used by create command)
+//prep_sql : builds preparatory SQL
+//extra_sq : builds extra sql in add_ table (like where, group by, etc...)  
 
 function add_metric(args) {
 	console.log('add metric command');
@@ -332,6 +346,7 @@ function join_cols(cols) {
 		return '';
 	}
 }
+
 function indices(cols) {
 	var separate_cols = cols.split(':');
 	var col_string = '';
@@ -373,7 +388,10 @@ function extra_sql(text){
 
 /////////////////////////////////
 //	Create Metric Functions
-/////////////////////////////////	
+/////////////////////////////////
+
+//Auxiliary functions associated with create_metric command
+//NONE	
 
 function create_metric(args) { 
 	//This function take an argument string containing the following:
@@ -439,6 +457,9 @@ function create_metric(args) {
 /////////////////////////////////
 //	Create Functions
 /////////////////////////////////
+
+//Auxiliary functions associated with Create command:
+//table_type : allows user to specify what type of table to create (also used by add_metric)
 
 function create(args) {
 	//This command is basically a select command, with a few extra arguments (table name, {indices})
@@ -506,6 +527,11 @@ function table_type(table) {
 /////////////////////////////////
 //	Select Functions
 /////////////////////////////////
+
+//Auxiliary functions associated with SELECT command:
+//selectify : transforms {what} argument into select portion of the select stmt (also used by create command)
+//fromify : returns from ... portion of select stmt (also used by create command)
+//whereify : transforms {how} argument into SQL (also used by create command)
 
 function select(args) {
 	//Basic structure will be select({what},from where,{how});
@@ -629,6 +655,10 @@ else
 //	Chain Functions
 /////////////////////////////////
 
+//Auxiliary functions associated with Chain command: (not functional right now)
+//build_prep_sql : will eventually return a condensed version of all associated prep_sql
+
+
 function chain(args) {
 	//Basic structure will be chain(chain_name,{metrics:here},{chain:conditions);
 	//Chain should only be used when the metrics share the same join condition.
@@ -687,8 +717,6 @@ function chain(args) {
 		
 }
 
-
-
 function build_prep_sql(metric,last_metric,join_cols) {
 	if (last_metric)
 	{
@@ -720,6 +748,8 @@ function build_prep_sql(metric,last_metric,join_cols) {
 /////////////////////////////////
 //	Help Functions
 /////////////////////////////////
+
+//No auxiliary functions
 
 function help(args) {
 	//Basic structure will be help(main_topic,sub_topic (optional));
@@ -755,6 +785,8 @@ save :
 /////////////////////////////////
 //	Comment Functions
 /////////////////////////////////
+
+//No auxiliary functions
 
 function comment(text){
 	//Posts a comment to the current script in the single line format (i.e. --Comment Text)
