@@ -568,7 +568,7 @@ function selectify(arg) {
 	//Note that in order to use these aggregate functions with segmentation will require the use of group bys in your where clause
 	//
 	//The selectify function takes a : delimited package of columns or the * argument, which translates to select *
-	var options = {c : "count(", s : "sum(", a : "avg(", max : "max(", min : "min(" };
+	var options = {c : "count(", s : "sum(", a : "avg(", max : "max(", min : "min(", d : "distinct " };
 	//var opt_functions = {left : left_str, substr : sub_str};
 	var select_sql = "";
 	if (arg == '*')
@@ -622,7 +622,8 @@ if (how)
 	var i = 1;
 	for (arg in args) {
 		var opt = args[arg].slice(0,args[arg].indexOf('/'));
-		var condition = args[arg].slice(args[arg].indexOf('/')+1).replace('+',',');
+		var condition = args[arg].slice(args[arg].indexOf('/')+1).replace(/\+/g,",");
+		console.log(condition);
 		if (args[arg].indexOf('/') == -1)
 		{
 			if(i == 1)

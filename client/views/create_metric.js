@@ -26,7 +26,8 @@ Template.create.events = {
 		var input_id = $(input).attr('id');
 		var input_val = $(input).val();
 		Session.set(input_id, input_val);
-		},
+		return false;
+	},
 	'click #launch_quick_add' : function(event) {
 		$('#quick_add_prompt').focus();
 	},
@@ -38,7 +39,7 @@ Template.create.events = {
 		});
 		new_metric['description'] = $('#metric_desc').val();
 		new_metric['collection'] = $('#metric_collection').val();
-		new_metric['prep_sql'] = $('#prep_sql_prompt').val();
+		new_metric['prep_sql'] = $('#prep_sql').val();
 		new_metric['creator'] = Meteor.userId();
 		var currentdate = new Date(); 
 		var datetime = currentdate.getDate() + "/"
