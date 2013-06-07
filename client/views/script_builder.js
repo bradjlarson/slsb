@@ -200,7 +200,8 @@ function add_metric(args) {
 					add_join(metric_cols, join_cols)+
 					extra_sql(metric.extra_sql)+
 					") WITH DATA\n"+
-					"PRIMARY INDEX("+indices(metric.indices)+");\n";
+					"PRIMARY INDEX("+indices(metric.indices)+")\n"+
+					"ON COMMIT PRESERVE ROWS;\n";
 	var success = true;
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
@@ -476,7 +477,7 @@ function create(args) {
 	output_sql += whereify(how);
  	if (indices_pkg)
 	{
-		output_sql += ") WITH DATA\n"+"PRIMARY INDEX("+indices(indices_pkg)+");\n";
+		output_sql += ") WITH DATA\n"+"PRIMARY INDEX("+indices(indices_pkg)+")\nON COMMIT PRESERVE ROWS;\n";
 	}
 	else
 	{
