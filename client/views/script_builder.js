@@ -1,6 +1,5 @@
 //Script Builder
 Date.prototype.today = function(){ 
-	console.log(this.getDate());
     return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear() 
 };
 //For the time now
@@ -13,11 +12,11 @@ Template.script_builder.command = function() {
 }
 */
 Template.script_builder.current_script = function() {
-	return build_commands.find({user_id: Meteor.userId()}, {$sort: {command_time: 1}});
+	return build_commands.find({user_id : Meteor.userId()}, {sort : {command_time: 1}});
 }
 
 Template.script_builder.all_metrics = function() {
-	return metric_library.find({}, {$sort: {used: -1}, limit: 10});
+	return metric_library.find({}, {sort: {used: -1}, limit: 10});
 }
 
 Template.script_builder.pre_run = function() {
@@ -63,9 +62,14 @@ Template.script_builder.events = {
 	'change #console_input' : function(event) {
 		if (pre_run_check(event.target.value))
 		{
-			script_eval(event.target.value);
+			console.log('change_triggered');
+			console.log(event.target.value);
+			if (event.target.value)
+			{
+				script_eval(event.target.value);
+			}
 		}
-		event.target.value = '';
+		//event.target.value = '';
 	},
 	'click #clear_current_script' : function(event) {
 		var metrics = build_commands.find().fetch();
@@ -76,15 +80,37 @@ Template.script_builder.events = {
 	},
 	'click .remove_script_metric' : function(event) {
 		var metric = event.target;
-		console.log(event.target.id);
+		//console.log(event.target.id);
 		var metric_id = $(metric).attr("id");
-		console.log(metric_id);
+		//console.log(metric_id);
 		build_commands.remove(metric_id);
 	},
+	'change .edit-command' : function(event) {
+		var command_id = $(event.target).attr("name");
+		var new_val = $(event.target).val();
+		//console.log(command_id);
+		//console.log(new_val);
+		//build_commands.update(command_id, {$set : {command_block : new_val}});
+		recompile(command_id, new_val);
+	},
+	'click #recompile_script' : function(event) {
+		console.log("recompile clicked");
+		var metrics = build_commands.find({user_id : Meteor.userId()}).fetch();
+		for (metric in metrics)
+		{
+			if (metric)
+			{
+				console.log("heading to recompile");
+				console.log(metrics[metric]);
+				recompile(metrics[metric]['_id'], metrics[metric]['command_block']);
+				console.log("recompile done");
+			}
+		}
+	}
 }
 
 function pre_run_check(command) {
-	console.log(command.indexOf('//'));
+	//console.log(command.indexOf('//'));
 	if (command.indexOf(';') == -1)
 	{
 		Session.set("pre_run_error", "Valid commands must end with ;");
@@ -94,7 +120,7 @@ function pre_run_check(command) {
 	{
 		Session.set("pre_run_error", "Valid commands must have opening (");
 		return false;
-		console.log(command.indexOf('//'));
+		//console.log(command.indexOf('//'));
 	}
 	else if (command.indexOf('(') == -1 && command.indexOf('//') == -1)
 	{
@@ -132,27 +158,82 @@ function script_eval(command_block) {
 	//+ is probably going to be the third level delimiter, but that isn't final yet
 	//An alternate method would be to ditch the split method, and instead read until the closing bracket had been found
 	//This would be a cleaner method, and would yield a cleaner syntax as well - allowing all arguments to be separated by ,
+if (command_block)
+{
 	Session.set("current_command", command_block);
 	var commands = command_block.split(';')
 	var command = "";
+	var output;
 	for (arg in commands)
 	{
+		command = false;
+		output = false;
 		command = commands[arg];
-		if(command != "")
+		console.log(command);
+		if(command)
 		{
 			if (command.slice(0,2) != '//')
 			{
 				var command_type = command.slice(0,command.indexOf('('));
 				var args = command.slice(command.indexOf('(')+1,command.indexOf(')')).split(',');
-				console.log(args);
-				run[command_type](args);
+				//console.log(args);
+				output = run[command_type](args);
 			}
 			else
 			{
-				comment(command);
+				ouput = comment(command);
+			}
+			
+			if (output)
+			{
+				build_commands.insert(output);
+				console.log("output");
+				console.log("script eval done");
+				console.log(output);
+				console.log("Command:"+command);
 			}
 		}	
-	}	
+	}
+}		
+}
+
+function recompile(block_id, command_block) {
+	//This will update the SQL output for all of the blocks currently in your stack. 
+	//This allows you to change the underlying metrics, and see the changes reflected in your script, without having to re-enter everything
+	//I also probably need to add the ability to edit your commands after they have been entered.
+	console.log("recompile running");
+	command = "";
+	output = false;
+	command = command_block;
+	Session.set("current_command", command_block);
+	if(command != "")
+	{
+		if (command.slice(0,2) != '//')
+		{
+			var command_type = command.slice(0,command.indexOf('('));
+			var args = command.slice(command.indexOf('(')+1,command.indexOf(')')).split(',');
+			console.log(args);
+			if (command_type != "create_metric")
+			{
+				output = run[command_type](args);
+			}
+		}
+		else
+		{
+			ouput = comment(command);
+		}
+	}
+	console.log("output");
+	console.log(output);
+	if (output)
+	{
+		build_commands.update(block_id, {$set : {command : output['command']}});
+		build_commands.update(block_id, {$set : {output_text : output['ouput_text']}});
+		build_commands.update(block_id, {$set : {sql_output : output['sql_output']}});
+		build_commands.update(block_id, {$set : {metric_name : output['metric_name']}});
+		build_commands.update(block_id, {$set : {command_block : output['command_block']}});
+	}
+	 
 }
 
 /////////////////////////////////
@@ -172,7 +253,7 @@ function script_eval(command_block) {
 //extra_sq : builds extra sql in add_ table (like where, group by, etc...)  
 
 function add_metric(args) {
-	console.log('add metric command');
+	//console.log('add metric command');
 	var metric_name = args[0];
 	var metric_name_only = '';
 	if (metric_name.indexOf('/') != -1)
@@ -203,6 +284,7 @@ function add_metric(args) {
 					"PRIMARY INDEX("+indices(metric.indices)+")\n"+
 					"ON COMMIT PRESERVE ROWS;\n";
 	var success = true;
+	Session.set("last_table", "add_"+metric_name);
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
 	var output_text = "Metric: "+metric.metric_name+" added to script!";
@@ -216,9 +298,10 @@ function add_metric(args) {
 						metric_name : metric_name_only,
 						command_block : Session.get("current_command")	
 						};
-	console.log(build_constructor);
-	metric_library.update(metric['_id'], {$inc : {used : 1}});					
-	build_commands.insert(build_constructor);									
+	//console.log(build_constructor);
+	//metric_library.update(metric['_id'], {$inc : {used : 1}});					
+	//build_commands.insert(build_constructor);
+	return build_constructor;									
 }
 
 function join_type(join_table) {
@@ -235,19 +318,29 @@ function join_type(join_table) {
 }
 
 function table_name(join_table) {
-	if (join_table.indexOf('/') != -1)
+	//Need to add ability to reference the last table in the stack
+	var table = '';
+	if(join_table.slice(0,4) == "last")
 	{
-		return join_table.slice(0,join_table.indexOf('/'));
+		table = Session.get("last_table");
 	}
 	else
 	{
-		return join_table;		
+		if (join_table.indexOf('/') != -1)
+		{
+			table = join_table.slice(0,join_table.indexOf('/'));
+		}
+		else
+		{
+			table = join_table;		
+		}
 	}
+	return table;
 }
 
 function add_join(metric_join, driver_join) {
-	console.log(metric_join);
-	console.log(driver_join);
+	//console.log(metric_join);
+	//console.log(driver_join);
 	var i = 0;
 	var sql = "";
 	for (col in driver_join)
@@ -262,7 +355,7 @@ function add_join(metric_join, driver_join) {
 		}
 		i++;
 	}
-	console.log(sql);
+	//console.log(sql);
 	return sql;	
 }
 
@@ -434,7 +527,7 @@ function create_metric(args) {
 						output_text : output_text,
 						command_block : Session.get("current_command")	
 						};
-	console.log(build_constructor);					
+	//console.log(build_constructor);					
 	build_commands.insert(build_constructor);
 	}
 	else
@@ -451,8 +544,9 @@ function create_metric(args) {
 		console.log(build_constructor);					
 		build_commands.insert(build_constructor);
 	}
-	console.log(args);
-	console.log('create metric command');
+	//console.log(args);
+	//console.log('create metric command');
+	return false;
 }
 
 /////////////////////////////////
@@ -464,8 +558,8 @@ function create_metric(args) {
 
 function create(args) {
 	//This command is basically a select command, with a few extra arguments (table name, {indices})
-	console.log(args);
-	console.log('create command');
+	//console.log(args);
+	//console.log('create command');
 	var table_name = args[0];
 	var what = args[1];
 	var where = args[2];
@@ -494,11 +588,22 @@ function create(args) {
 						success : true,
 						output_text : output_text,
 						sql_output : output_sql,
-						metric_name : 'Create Table',
+						metric_name : table_name,
 						command_block : Session.get("current_command")	
 						};
-	console.log(build_constructor);					
-	build_commands.insert(build_constructor);
+	//console.log(build_constructor);
+	var table_name_only ="";
+	if (table_name.indexOf('/') != -1)
+	{
+		table_name_only = table_name.slice(0,table_name.indexOf('/'));
+	}
+	else
+	{
+		table_name_only = table_name;
+	}
+	Session.set("last_table", table_name_only);					
+	//build_commands.insert(build_constructor);
+	return build_constructor;
 }
 
 function table_type(table) {
@@ -536,8 +641,8 @@ function table_type(table) {
 
 function select(args) {
 	//Basic structure will be select({what},from where,{how});
-	console.log(args);
-	console.log('select command');
+	//console.log(args);
+	//console.log('select command');
 	var what = args[0];
 	var where = args[1];
 	var how = args[2];
@@ -558,8 +663,9 @@ function select(args) {
 						metric_name : 'Select Stmt',
 						command_block : Session.get("current_command")	
 						};
-	console.log(build_constructor);					
-	build_commands.insert(build_constructor);
+	//console.log(build_constructor);					
+	//build_commands.insert(build_constructor);
+	return build_constructor;
 }
 
 function selectify(arg) {
@@ -588,7 +694,8 @@ function selectify(arg) {
 				var name = cols[col].slice(0,cols[col].indexOf('/'));
 				var opt = cols[col].slice(cols[col].indexOf('/')+1);
 				var builder = options[opt] ? options[opt] : opt_functions[opt](opt);
-				select_sql += options[opt]+name+')';
+				select_sql += options[opt]+name;
+				if (opt != "d") { select_sql +=")";}
 				if (i != cols.length)
 				{
 					select_sql +=', ';
@@ -624,7 +731,7 @@ if (how)
 	for (arg in args) {
 		var opt = args[arg].slice(0,args[arg].indexOf('/'));
 		var condition = args[arg].slice(args[arg].indexOf('/')+1).replace(/\+/g,",");
-		console.log(condition);
+		//console.log(condition);
 		if (args[arg].indexOf('/') == -1)
 		{
 			if(i == 1)
@@ -667,8 +774,8 @@ function chain(args) {
 	//It is also useful for creating metric packages from the DB Explorer columns.
 	//If several metrics share the same join.src, they will be condensed into a single add_metric
 	//Currently, if multiple metrics add the same column name, only the first will be kept
-	console.log(args);
-	console.log('chain command');
+	//console.log(args);
+	//console.log('chain command');
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
 	var name = args[0];
@@ -716,6 +823,7 @@ function chain(args) {
 		command_block : Session.get("current_command")
 	};
 	build_commands.insert(build_constructor);
+	return false;
 		
 }
 
@@ -755,8 +863,8 @@ function build_prep_sql(metric,last_metric,join_cols) {
 
 function help(args) {
 	//Basic structure will be help(main_topic,sub_topic (optional));
-	console.log(args);
-	console.log('help command');
+	//console.log(args);
+	//console.log('help command');
 	var help_file = help_docs.find({topic_name : args[0]}).fetch();
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
@@ -768,8 +876,9 @@ function help(args) {
 		output_text : help_file[0]['help_text'],
 		command_block : Session.get("current_command")
 	};
-	console.log(build_constructor);
+	//console.log(build_constructor);
 	build_commands.insert(build_constructor);
+	return false;
 /*
 Help commands will be:
 add_metric: Basic syntax
@@ -794,13 +903,14 @@ function comment(text){
 	//Posts a comment to the current script in the single line format (i.e. --Comment Text)
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
-	build_commands.insert({user_id : Meteor.userId(), 
+	var build_constructor = {user_id : Meteor.userId(), 
 							command : text, 
 							metric_name : 'Comment', 
 							sql_output : text.replace('//', '--'), 
 							success : true, 
 							commmand_time : datetime, 
 							output_text : 'Done.',
-							command_block : Session.get("current_command") });
-	console.log('comment');
+							command_block : Session.get("current_command") };
+	//console.log('comment');
+	return build_constructor;
 }

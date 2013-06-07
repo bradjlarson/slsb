@@ -5,15 +5,19 @@
 		<div class="span5">
 			<h3 class="text-center page-header">Script Builder:</h3>
 		</div>
-		<div class="span5">
+		<div class="span7">
 			<h3	class="text-center page-header">Script Preview:
-				<button id="clear_current_script" class="btn btn-inverse btn-small pull-right">Clear</button>
-				<div class="dropdown pull-right"><a id="script_metrics" class="btn btn-inverse btn-small pull-right dropdown-toggle" data-toggle="dropdown" href="#">Metrics<span class="caret"></span></a>
+				<div class="btn-group pull-right">	
+				<button id="clear_current_script" class="btn btn-inverse btn-small"><strong>Clear</strong></button>
+				<button id="recompile_script" class="btn btn-inverse btn-small"><strong>Recompile</strong></button>
+				<a id="script_metrics" class="btn btn-inverse btn-small dropdown-toggle" data-toggle="dropdown" href="#">Metrics<span class="caret"></span></a>
 					<ul class="dropdown-menu pull-right" role="menu">
+					{{#isolate}}	
 					{{#each current_script}}
-						<li><a tabindex="-1"><small>{{metric_name}}</small><button id="{{_id}}" class="close remove_script_metric">&times;</button></a></li>
+						<li><a tabindex="-1"><small><input name="{{_id}}" class="edit-command input-xxlarge" value="{{command_block}}"></small><button id="{{_id}}" class="close remove_script_metric">&times;</button></a></li>
 					{{/each}}
-					</ul>
+					{{/isolate}}	
+					</ul>	
 				</div>	
 			</h3>
 		</div>
@@ -34,7 +38,7 @@
 			</div>
 			{{/isolate}}
 			<div>
-				<textarea rows="4" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');">{{#if chistory}}{{current_command}}{{/if}}</textarea>
+				<textarea rows="4" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
 			</div>
 		</div>
 		<div class="span7">

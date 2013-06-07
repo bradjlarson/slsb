@@ -7,6 +7,7 @@ Template.docs.doc_file = function() {
 Template.docs.events = {
 	'change .docs_edit' : function(event) {
 		var doc_name = $(event.target).attr("name");
+		console.log(doc_name);
 		var doc_id = doc_name.split('.')[1];
 		console.log(doc_id);
 		var update_val = $(event.target).val();
