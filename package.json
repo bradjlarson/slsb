@@ -1,10 +1,10 @@
 {
-	"name": "SLSB",
-	"version": "0.1",
-	"dependencies": {
-		"fibers : "1.x"},
-	"engines" : {
-		"node : "0.10.x",
-		"npm : "1.2.x",
+	"name": "heroku-meteor-npm",
+	"version": "0.0.1",
+	"engines": {
+		"node": "0.6.x"
+	},
+	"scripts": {
+		"install": "mv node_modules public/node_modules"
 	}
 }
