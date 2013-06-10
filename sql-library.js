@@ -36,6 +36,7 @@ Meteor.startup(function() {
 	Session.setDefault("search_field", null);
 	Session.setDefault("current_metric_m", false);
 	Session.setDefault("metric_searched_m", false);
+	Session.setDefault("history_search_query", false);	
 });
 /////////////////////////////////////////////////////	
 //Subscriptions

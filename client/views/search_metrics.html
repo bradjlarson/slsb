@@ -5,10 +5,14 @@
 			<h3 id="search-add-header">Add Metric:</h3>
 		</div>
 		<div class="modal-body">
-			<div id="summary">
-				<textarea id="search-add-command" placeholder="add_metric(...);" class="span5" rows="15">add_metric(...);	
-				</textarea>
+			<div id="add_command_line">
+				<label><strong>Please enter a command below (defaults provided):</strong></label>
+				<input class="input-xxlarge" id="search-add-command" placeholder="add_metric(..." data-provide="typeahead" autocomplete="off">		
 			</div>
+			<br />
+			<br />
+			<br />
+			<br />
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>

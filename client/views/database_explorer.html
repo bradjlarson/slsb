@@ -52,8 +52,11 @@
 			<table class="table table-condensed table-hover table-bordered">
 			{{#each columns}}
 				<tr class="db_columns" name="{{column_name}}">
-					<td>{{column_name}}</td>
-					<td class="db_editable" name="{{_id}}"><input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"></td>
+					<td>{{column_name}} <i name="{{_id}}" class="db-explore-add icon-plus pull-right "></td>
+					<td class="db_editable" name="{{_id}}">
+						<!-- <input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"> -->
+						{{column_desc}}
+					</td>
 				</tr>
 			{{/each}}
 			</table>

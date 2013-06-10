@@ -68,6 +68,7 @@ Template.explorer.databases = function() {
 		return databases.find({}, {sort: {database_name: 1}});
 	}	
 }
+
 Template.explorer.tables = function() {
 	var search_query = Session.get("table_searched");
 	var mongo_query = '.*'+search_query+'.*';
@@ -80,15 +81,19 @@ Template.explorer.tables = function() {
 		return tables.find({database_name : Session.get("db_selected")}, {sort: {table_name : 1}});
 	}	
 }
+
 Template.explorer.columns = function() {
 	return columns.find({database_name : Session.get("db_selected"), table_name : Session.get("table_selected")}, {sort : {column_name : 1}});
 }
+
 Template.explorer.selected_table = function() {
-	return tables.find({table_name : Session.get("table_selected")});	
+	return tables.find({database_name : Session.get("db_selected"), table_name : Session.get("table_selected")});	
 }
+
 Template.explorer.db_selected = function() {
 	return Session.get("db_selected") ? true : false;
 }
+
 Template.explorer.table_selected = function() {
 	return Session.get("table_selected") ? true : false;
 }
