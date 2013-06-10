@@ -1,0 +1,12 @@
+<template name="export_docs">
+	<table class="table-bordered table table-condensed">
+		{{#isolate}}
+		{{#each export_item}}
+			<tr>
+				<td>{{item_type}}</td>
+				<td>{{item_text}}</td>
+			</tr>
+		{{/each}}
+		{{/isolate}}
+	</table>
+</template>			

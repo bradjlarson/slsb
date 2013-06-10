@@ -1,6 +1,6 @@
 //Script Builder
 Date.prototype.today = function(){ 
-    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear() 
+    return ((((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ (this.getDate() < 10)?"0":"") + this.getDate() +"/"+ this.getFullYear() 
 };
 //For the time now
 Date.prototype.timeNow = function(){
@@ -218,7 +218,7 @@ Template.simple_form.events = {
 };
 
 Template.create_simple.events = {
-	'change .simple-input' : function(event) {
+	'change .create-simple-input' : function(event) {
 		simple_create_update();
 	},
 	'click #simple_create_submit' : function(event) {
@@ -226,7 +226,56 @@ Template.create_simple.events = {
 		Session.set("simple_id", false);
 		$('#simple_create_form')[0].reset();
 		return false;
-		
+	}
+};
+
+Template.select_simple.events = {
+	'change .create-simple-input' : function(event) {
+		simple_select_update();
+	},
+	'click #simple_create_submit' : function(event) {
+		simple_select_update();
+		Session.set("simple_id", false);
+		$('#simple_select_form')[0].reset();
+		return false;
+	}
+};
+
+Template.add_metric_simple.events = {
+	'change .add-simple-input' : function(event) {
+		simple_add_metric_update();
+	},
+	'click #simple_add_metric_submit' : function(event) {
+		simple_add_metric_update();
+		Session.set("simple_id", false);
+		$('#simple_add_metric_form')[0].reset();
+		return false;
+	}
+};
+
+Template.chain_simple.events = {
+	/*
+	'change .chain-simple-input' : function(event) {
+		simple_chain_update();
+	},
+	'click #simple_chain_submit' : function(event) {
+		simple_chain_update();
+		Session.set("simple_id", false);
+		$('#simple_chain_form')[0].reset();
+		return false;
+	}
+	*/
+};
+
+Template.comment_simple.events = {
+	'change .comment-simple-input' : function(event) {
+		simple_comment_update();
+	},
+	'click #simple_comment_submit' : function(event) {
+		simple_comment_update();
+		Session.set("simple_id", false);
+		$('#simple_comment_form')[0].reset();
+		return false;
 	}
 };
 
@@ -238,6 +287,33 @@ function simple_create_update() {
 	var extra_sql = $('#simple_create_how').val();
 	var indices = $('#simple_create_index').val();
 	var create_command = 'create('+table_name+','+cols_added+','+data_src+','+extra_sql+','+indices+');';
+	make_command(create_command);
+}
+
+function simple_select_update() {
+	var what = $('#simple_select_what').val();
+	var data_src = $('#simple_select_from').val();
+	var extra_sql = $('#simple_select_how').val();
+	var select_command = 'select('+what+','+data_src+','+extra_sql+');';
+	make_command(select_command);
+}
+
+function simple_add_metric_update() {
+	var metric_name = $('#simple_metric_name').val();
+	var data_src = $('#simple_data_append').val();
+	var extra_sql = $('#simple_join_cols').val();
+	var add_metric_command = 'add_metric('+metric_name+','+data_src+','+extra_sql+');';
+	make_command(add_metric_command);
+}
+
+function simple_comment_update() {
+	var comment = $('#simple_comment_text').val();
+	var comment_command = '//'+comment+';';
+	make_command(comment_command);
+}
+
+
+function make_command(command) {
 	var build_constructor = {};
 	var today = new Date();
 	var datetime = today.today()+" @ "+today.timeNow();
@@ -251,16 +327,15 @@ function simple_create_update() {
 						//command_block : Session.get("current_command"),
 						active : true	
 	};
-	
 	if (Session.get("simple_id"))
 	{
-		recompile(Session.get("simple_id"), create_command);
+		recompile(Session.get("simple_id"), command);
 	}
 	else
 	{
 		var new_id = build_commands.insert(build_constructor);
 		console.log(new_id);
 		Session.set("simple_id", new_id);
-		recompile(Session.get("simple_id"), create_command);
+		recompile(Session.get("simple_id"), command);
 	}
-}
+};

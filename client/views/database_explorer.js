@@ -52,6 +52,10 @@ Template.explorer.events = {
 		var new_desc = $(event.target).val();
 		console.log(new_desc);
 		columns.update(doc_id, {$set : {column_desc : new_desc}});
+	},
+	'click .db-explore-add' : function(event) {
+		var doc_id = $(event.target).attr("name");
+		console.log(doc_id);
 	}		
 }
 

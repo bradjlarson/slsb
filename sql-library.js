@@ -8,6 +8,7 @@ settings = new Meteor.Collection("settings");
 feedback = new Meteor.Collection("feedback");
 docs = new Meteor.Collection("docs");
 help_docs = new Meteor.Collection("help");
+export_docs = new Meteor.Collection("export_docs");
 
 if (Meteor.isServer) {
 	
@@ -36,7 +37,8 @@ Meteor.startup(function() {
 	Session.setDefault("search_field", null);
 	Session.setDefault("current_metric_m", false);
 	Session.setDefault("metric_searched_m", false);
-	Session.setDefault("history_search_query", false);	
+	Session.setDefault("history_search_query", false);
+	Session.setDefault("export_flag", false);	
 });
 /////////////////////////////////////////////////////	
 //Subscriptions
@@ -79,7 +81,9 @@ Template.side_bar.events = {
 	'click #launch_feedback' : function(event) {
 		$('#main').html(Meteor.render(Template.feedback));},
 	'click #launch_docs' : function(event) {
-		$('#main').html(Meteor.render(Template.docs));}												
+		$('#main').html(Meteor.render(Template.docs));},
+	'click #launch_export' : function(event) {
+		$('#main').html(Meteor.render(Template.export_docs));}												
 };
 
 /////////////////////////////////////////////////////

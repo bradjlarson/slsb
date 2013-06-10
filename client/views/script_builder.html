@@ -98,15 +98,15 @@
 	{{#isolate}}
 	<form id="simple_create_form">
 		<label>What is the table name?</label>
-		<input id="simple_create_name" type="text" class="simple-input input-xlarge" name="table_name" placeholder="table_name">
+		<input id="simple_create_name" type="text" class="create-simple-input input-xlarge" name="table_name" placeholder="table_name">
 		<label>Which columns will be in the table?</label>
-		<input id="simple_create_what" type="text" class="simple-input input-xlarge" name="cols_added" placeholder="{columns:here}">
+		<input id="simple_create_what" type="text" class="create-simple-input input-xlarge" name="cols_added" placeholder="{columns:here}">
 		<label>What is the data source?</label>
-		<input id="simple_create_from" type="text" class="simple-input input-xlarge" name="data_src" placeholder="db.table">
+		<input id="simple_create_from" type="text" class="create-simple-input input-xlarge" name="data_src" placeholder="db.table">
 		<label>Please enter any conditions:</label>
-		<input id="simple_create_how" type="text" class="simple-input input-xlarge" name="extra_sql" placeholder="{condition1:condition2:...}">
+		<input id="simple_create_how" type="text" class="create-simple-input input-xlarge" name="extra_sql" placeholder="{condition1:condition2:...}">
 		<label>What is the primary indice(s)?</label>
-		<input id="simple_create_index" type="text" class="simple-input input-xlarge" name="indices" placeholder="{indice1:indice2:...}">
+		<input id="simple_create_index" type="text" class="create-simple-input input-xlarge" name="indices" placeholder="{indice1:indice2:...}">
 		<div class="clearfix">
 			<button id="simple_create_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
 		</div>
@@ -117,11 +117,11 @@
 <template name="select_simple">
 	<form id="simple_select_form">
 		<label>Which columns would you like to select</label>
-		<input id="simple_select_what" type="text" class="input-xlarge" placeholder="{columns:here}">
+		<input id="simple_select_what" type="text" class="select-simple-input input-xlarge" placeholder="{columns:here}">
 		<label>What is the data source?</label>
-		<input id="simple_select_from" type="text" class="input-xlarge" placeholder="db.table">
+		<input id="simple_select_from" type="text" class="select-simple-input input-xlarge" placeholder="db.table">
 		<label>Please enter any conditions:</label>
-		<input id="simple_select_how" type="text" class="input-xlarge" placeholder="{condition1:condition2:...}">
+		<input id="simple_select_how" type="text" class="select-simple-input input-xlarge" placeholder="{condition1:condition2:...}">
 		<div class="clearfix">
 		<button id="simple_select_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
 		</div>
@@ -131,11 +131,11 @@
 <template name="add_metric_simple">
 	<form id="simple_add_metric_form">
 		<label>What metric would you like to add?</label>
-		<input id="simple_metric_name" type="text" data-provide="typeahead" class="input-xlarge" placeholder="metric_name">
+		<input id="simple_metric_name" type="text" data-provide="typeahead" class="add-simple-input input-xlarge" placeholder="metric_name">
 		<label>What table would you like to add it to?</label>
-		<input id="simple_data_append" type="text" data-provide="typeahead" class="input-xlarge" placeholder="last">
+		<input id="simple_data_append" type="text" data-provide="typeahead" class="add-simple-inputinput-xlarge" placeholder="last">
 		<label>What columns would you like to join on?</label>
-		<input id="simple_join_cols" type="text" class="input-xlarge" place_holder="{column1:column2:...}">
+		<input id="simple_join_cols" type="text" class="add-simple-input input-xlarge" place_holder="{column1:column2:...}">
 		<div class="clearfix">
 		<button id="simple_add_metric_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
 		</div>
@@ -145,11 +145,11 @@
 <template name="chain_simple">
 	<form>
 		<label>What metrics would you like to chain together?</label>
-		<input id="simple_metric_name" type="text" data-provide="typeahead" class="input-xlarge" placeholder="{metric1:metric2:...:metricN}">
+		<input id="simple_metric_name" type="text" data-provide="typeahead" class="chain-simple-input input-xlarge" placeholder="{metric1:metric2:...:metricN}">
 		<label>Would you like to create a permanent or temporary metric?</label>
-		<input id="simple_join_cols" type="text" class="input-xlarge" data-provide="typeahead" data-source="['permanent','temporary']">
+		<input id="simple_join_cols" type="text" class="chain-simple-input input-xlarge" data-provide="typeahead" data-source="['permanent','temporary']">
 		<div class="clearfix">
-		<button id="simple_add_metric_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
+		<button id="simple_chain_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
 		</div>
 	</form>
 </template>
@@ -157,9 +157,9 @@
 <template name="comment_simple">
 	<form id="simple_comment_form">
 		<label>What would you like your comment to say?</label>
-		<input id="simple_comment_text" type="text" data-provide="typeahead" class="input-xlarge" placeholder="enter your comment here...">
+		<input id="simple_comment_text" type="text" data-provide="typeahead" class="comment-simple-input input-xlarge" placeholder="enter your comment here...">
 		<div class="clearfix">
-		<button id="simple_add_metric_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
+		<button id="simple_comment_submit" class="btn btn-inverse form-actions pull-left">Submit</button>
 		</div>
 	</form>
 </template>
