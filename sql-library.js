@@ -13,6 +13,40 @@ export_docs = new Meteor.Collection("export_docs");
 if (Meteor.isServer) {
 	
 //help_docs.insert({topic_name : "add_metric", help_text : help_text});
+Meteor.publish("metric_library", function() {
+	return metric_library.find({creator : this.userId});
+});
+Meteor.publish("build_commands", function() {
+	return build_commands.find({user_id : this.userId});
+});
+Meteor.publish("databases", function() {
+	return databases.find({});
+});
+Meteor.publish("tables", function() {
+	return tables.find({});
+});
+Meteor.publish("columns", function() {
+	return columns.find({});
+});
+Meteor.publish("settings", function() {
+	return settings.find({user_id : this.userId});
+});
+Meteor.publish("feedback", function() {
+	return databases.find({user_id : this.userId});
+});
+Meteor.publish("docs", function() {
+	return docs.find({});
+});
+Meteor.publish("help_docs", function() {
+	return help_docs.find({});
+});
+Meteor.publish("export_docs", function() {
+	return export_docs.find({user_id : this.userId});
+});
+
+
+
+
 
 }
 	
@@ -43,6 +77,18 @@ Meteor.startup(function() {
 /////////////////////////////////////////////////////	
 //Subscriptions
 //Coming after autopublish is turned off
+
+Meteor.subscribe("metric_library");
+Meteor.subscribe("build_commands");
+Meteor.subscribe("databases");
+Meteor.subscribe("tables");
+Meteor.subscribe("columns");
+Meteor.subscribe("feedback");
+Meteor.subscribe("docs");
+Meteor.subscribe("help_docs");
+Meteor.subscribe("export_docs");
+Meteor.subscribe("settings");
+
 
 /////////////////////////////////////////////////////
 //Misc.

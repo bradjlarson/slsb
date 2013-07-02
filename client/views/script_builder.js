@@ -1,11 +1,14 @@
 //Script Builder
 Date.prototype.today = function(){ 
-    return ((((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ (this.getDate() < 10)?"0":"") + this.getDate() +"/"+ this.getFullYear() 
+	//console.log(this.getDate());
+    return (((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+((this.getDate() < 10)?"0":"") + this.getDate() +"/"+ this.getFullYear() 
 };
 //For the time now
 Date.prototype.timeNow = function(){
      return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
 };
+
+
 /*
 Template.script_builder.command = function() {
 	return build_commands.find({user_id: Meteor.userId()}, {sort: {command_time: -1}, limit: 10});
@@ -82,7 +85,7 @@ Template.script_builder.events = {
 			console.log(event.target.value);
 			if (event.target.value)
 			{
-				script_eval(event.target.value);
+				process_block(event.target.value);
 			}
 		}
 		//event.target.value = '';
@@ -111,15 +114,12 @@ Template.script_builder.events = {
 	},
 	'click #recompile_script' : function(event) {
 		console.log("recompile clicked");
-		var metrics = build_commands.find({user_id : Meteor.userId()}).fetch();
+		var metrics = build_commands.find({user_id : Meteor.userId(), active : true}).fetch();
 		for (metric in metrics)
 		{
 			if (metric)
 			{
-				console.log("heading to recompile");
-				console.log(metrics[metric]);
 				recompile(metrics[metric]['_id'], metrics[metric]['command_block']);
-				console.log("recompile done");
 			}
 		}
 	},
@@ -175,7 +175,7 @@ Template.command_history.events = {
 	'change .editing_history' : function(event) {
 		var new_command = $(event.target).val();
 		var doc_id = $(event.target).attr("name");
-		recompile(doc_id, new_command)
+		recompile(doc_id, new_command);
 		$(event.target).parent().html(new_command);
 		//console.log(new_command);
 		//console.log(doc_id);
@@ -286,7 +286,7 @@ function simple_create_update() {
 	var data_src = $('#simple_create_from').val();
 	var extra_sql = $('#simple_create_how').val();
 	var indices = $('#simple_create_index').val();
-	var create_command = 'create('+table_name+','+cols_added+','+data_src+','+extra_sql+','+indices+');';
+	var create_command = 'create({'+table_name+'},{'+cols_added+'},{'+data_src+'},{'+extra_sql+'},{'+indices+'});';
 	make_command(create_command);
 }
 
@@ -294,7 +294,7 @@ function simple_select_update() {
 	var what = $('#simple_select_what').val();
 	var data_src = $('#simple_select_from').val();
 	var extra_sql = $('#simple_select_how').val();
-	var select_command = 'select('+what+','+data_src+','+extra_sql+');';
+	var select_command = 'select({'+what+'},{'+data_src+'},{'+extra_sql+'});';
 	make_command(select_command);
 }
 
@@ -302,7 +302,7 @@ function simple_add_metric_update() {
 	var metric_name = $('#simple_metric_name').val();
 	var data_src = $('#simple_data_append').val();
 	var extra_sql = $('#simple_join_cols').val();
-	var add_metric_command = 'add_metric('+metric_name+','+data_src+','+extra_sql+');';
+	var add_metric_command = 'add_metric({'+metric_name+'},{'+data_src+'},{'+extra_sql+'});';
 	make_command(add_metric_command);
 }
 

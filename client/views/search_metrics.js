@@ -26,12 +26,12 @@ Template.search.events = {
 		//$('#search-add-command').val('add_metric('+metric_name+',');
 		//Need to construct the recommended create and add_metric commands
 		var merged_pkgs = pkg_merge(this_metric.join_cols, this_metric.cols_added);
-		var create_command = 'create(get_'+metric_name+','+merged_pkgs;
-		create_command += ','+this_metric.join_src+','+this_metric.extra_sql+','+this_metric.indices+');';
+		var create_command = 'create({get_'+metric_name+'},'+merged_pkgs;
+		create_command += ',{'+this_metric.join_src+'},{'+this_metric.extra_sql+'},'+this_metric.indices+');';
 		var data_source = Session.get("last_table") ? Session.get("last_table") : "your_table";
 		//console.log(data_source);
-		var add_command = 'add_metric('+metric_name+','+data_source+','+this_metric.join_cols+');';
-		var select_command = 'select('+merged_pkgs+','+this_metric.join_src+','+this_metric.extra_sql+');';
+		var add_command = 'add_metric({'+metric_name+'},{'+data_source+'},'+this_metric.join_cols+');';
+		var select_command = 'select('+merged_pkgs+',{'+this_metric.join_src+'},{'+this_metric.extra_sql+'});';
 		var defaults = [];
 		defaults.push(add_command);
 		defaults.push(create_command);

@@ -16,7 +16,7 @@ function add_to_export(objs) {
 	{
 		var insert_text = "metric_library.insert("+JSON.stringify(objs[obj])+")";
 		console.log(insert_text);
-		export_docs.insert({item_type : "metric_library", item_text : insert_text});
+		export_docs.insert({item_type : "metric_library", item_text : insert_text, user_id : Meteor.userId()});
 	}
 	Session.set("export_flag", true);
 }

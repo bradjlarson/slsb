@@ -2,7 +2,7 @@
 Template.feedback.events = {
 	'click #feedback_submit' : function(event) {
 		new_feedback = {};
-		new_feedback['user'] = Meteor.userId();
+		new_feedback['user_id'] = Meteor.userId();
 		var currentdate = new Date(); 
 		var datetime = currentdate.getDate() + "/"
 		                + (currentdate.getMonth()+1)  + "/" 

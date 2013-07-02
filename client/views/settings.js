@@ -12,3 +12,7 @@ Template.settings.events = {
 Template.settings.selected_settings = function() {
 	return settings.find({setting_type : Session.get("settings_selected")}, {sort : {setting_name : 1}});
 }
+
+//Possible settings:
+	//-Letting the user set their table type (related to syntax type)
+	

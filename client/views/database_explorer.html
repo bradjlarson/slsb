@@ -1,4 +1,24 @@
 <template name="explorer">
+	<div id="db_exp_add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="db-exp-add-header" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+			<h3 id="db-exp-add-header">Add Metric:</h3>
+		</div>
+		<div class="modal-body">
+			<div id="add_command_line">
+				<label><strong>Please enter a command below (defaults provided):</strong></label>
+				<input class="input-xxlarge" id="db-exp-add-command" placeholder="add_metric(..." data-provide="typeahead" autocomplete="off">		
+			</div>
+			<br />
+			<br />
+			<br />
+			<br />
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+			<button id="1.2" class="btn btn-success search-submit" data-dismiss="modal" aria-hidden="true">Submit</button>
+		</div>
+	</div>
 	<div class="span3">
 		<h4 class="page-header explorer_header">Databases:</h4>
 		<div class="input-append explorer_search">
@@ -43,6 +63,7 @@
 				{{#each selected_table}}
 				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
 				<p class="db_editable" name="{{_id}}"><textarea class="table-editable span12" name="{{_id}}">{{table_desc}}</textarea></p>
+				<p class="db_editable" name="{{_id}}">Recommended join columns: {{join_cols}}</p>
 				{{/each}}
 		</div>
 		<div class="table_info">			
@@ -52,7 +73,7 @@
 			<table class="table table-condensed table-hover table-bordered">
 			{{#each columns}}
 				<tr class="db_columns" name="{{column_name}}">
-					<td>{{column_name}} <i name="{{_id}}" class="db-explore-add icon-plus pull-right "></td>
+					<td>{{column_name}} <i name="{{column_name}}.{{_id}}" class="db-explore-add icon-plus pull-right "></td>
 					<td class="db_editable" name="{{_id}}">
 						<!-- <input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"> -->
 						{{column_desc}}

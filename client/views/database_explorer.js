@@ -54,8 +54,46 @@ Template.explorer.events = {
 		columns.update(doc_id, {$set : {column_desc : new_desc}});
 	},
 	'click .db-explore-add' : function(event) {
-		var doc_id = $(event.target).attr("name");
-		console.log(doc_id);
+		var selected = event.target;
+		var col_id = $(selected).attr('name').split('.')[1];
+		var metric_name = $(selected).attr('name').split('.')[0];
+		var this_column = columns.find({_id : col_id}).fetch()[0];
+		var this_table = tables.find({table_name : this_column.table_name}).fetch()[0];
+		console.log(this_column);
+		console.log(this_table);
+		var data_src = this_column.database_name +'.'+this_column.table_name; 
+		var extra_sql = this_table.extra_sql ? this_table.extra_sql : '--none';
+		//$('#search-add-command').val('add_metric('+metric_name+',');
+		//Need to construct the recommended create and add_metric commands
+		var merged_pkgs = pkg_merge(this_table.join_cols, this_column.column_name);
+		var create_command = 'create({get_'+metric_name+'},'+merged_pkgs;
+		create_command += ',{'+data_src+'},{'+this_table.extra_sql+'},'+this_table.join_cols+');';
+		var data_source = Session.get("last_table") ? Session.get("last_table") : "your_table";
+		//console.log(data_source);
+		var add_command = 'add_metric({'+metric_name+'},{'+data_source+'},'+this_table.join_cols+');';
+		var select_command = 'select('+merged_pkgs+',{'+data_src+'},{'+this_table.extra_sql+'});';
+		var defaults = [];
+		defaults.push(add_command);
+		defaults.push(create_command);
+		defaults.push(select_command);
+		//console.log(add_command);
+		//console.log(defaults);
+		$('#db-exp-add-command').val('');
+		$('#db-exp-add-command').typeahead({source : defaults});
+		$('#db_exp_add').modal('show');
+		//console.log(this_metric);
+		//console.log(this_metric.metric_name)
+		//current_script.insert(this_metric);
+	},
+	'click .search-submit' : function(event) {
+		var command = $('#db-exp-add-command').val();
+		console.log('db exp add');
+		console.log(command);
+		if (command)
+		{
+			script_eval(command);			
+		}
+		$('#search_add').modal('hide');
 	}		
 }
 

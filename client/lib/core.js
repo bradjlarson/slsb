@@ -1,27 +1,44 @@
+/*
 var run = {};
+
+//Thoughts on metric/build_command setup:
+
+//For the build_commands, I may want to capture each of the arguments by name
+//Particularly I'll need to capture the join_cols and the indices
+//In some/most cases, the join_cols probably are the indices
+//This will allow me to inherit indices and join columns when adding metrics to a script (like when I have acct_id and a date)
+
+//Need to check that create still works, and is storing data correctly
+//Need to double check that all of the simple forms still work correctly
+	//-Make sure that arguments have redundant { and } stripping in the subfunctions
+
+//Need update the block commands to store join conditions and indices, so that those conditions can be inherited
 
 ////////////////////////////////////
 //Core language functions
 ////////////////////////////////////
 
 pkg_merge = function(pkg1, pkg2) {
-	var unpkg1 = pkg1.replace('{','').replace('}','').split(':');
-	var unpkg2 = pkg2.replace('{','').replace('}','').split(':');
-	var merged = _.union(unpkg1, unpkg2);
-	var repkg = '{';
-	var i = 0;
-	for (item in merged)
-	{
-		repkg += merged[item];
-		if (i != merged.length)
+	if (pkg1 && pkg2)
+	{	
+		var unpkg1 = pkg1.replace('{','').replace('}','').split(':');
+		var unpkg2 = pkg2.replace('{','').replace('}','').split(':');
+		var merged = _.union(unpkg1, unpkg2);
+		var repkg = '{';
+		var i = 0;
+		for (item in merged)
 		{
-			repkg += ':'
+			repkg += merged[item]+':';
 		}
-		i++;
+		repkg += '}';
+		var repkg_fix = repkg.replace(/:}/g,'}');
+		//console.log(repkg);
+		return repkg_fix;
 	}
-	repkg += '}';
-	console.log(repkg);
-	return repkg;
+	else
+	{
+		return 'Error - only 1 pkg sent';
+	}
 };
 
 
@@ -55,8 +72,6 @@ parse = function(command_block) {
 	//Ideally I'd like it to recognize quotations, parentheses sets, bracket sets, and then use that information to generate the arguments
 	//This will probably be rather difficult
 	var command = command_block.slice(0,command_block.indexOf('('));
-	
-
 };
 
 script_eval = function(command_block) {
@@ -77,13 +92,13 @@ if (command_block)
 		command = false;
 		output = false;
 		command = commands[arg];
-		console.log(command);
+		//console.log(command);
 		if(command)
 		{
 			if (command.slice(0,2) != '//')
 			{
 				var command_type = command.slice(0,command.indexOf('('));
-				var args = command.slice(command.indexOf('(')+1,command.indexOf(')')).split(',');
+				var args = command.slice(command.indexOf('(')+1,command.indexOf(');')).split('},{');
 				//console.log(args);
 				output = run[command_type](args);
 			}
@@ -111,7 +126,7 @@ recompile = function(block_id, command_block) {
 	//This will update the SQL output for all of the blocks currently in your stack. 
 	//This allows you to change the underlying metrics, and see the changes reflected in your script, without having to re-enter everything
 	//I also probably need to add the ability to edit your commands after they have been entered.
-	console.log("recompile running");
+	//console.log("recompile running");
 	command = "";
 	output = false;
 	command = command_block;
@@ -121,8 +136,8 @@ recompile = function(block_id, command_block) {
 		if (command.slice(0,2) != '//')
 		{
 			var command_type = command.slice(0,command.indexOf('('));
-			var args = command.slice(command.indexOf('(')+1,command.indexOf(')')).split(',');
-			console.log(args);
+			var args = command.slice(command.indexOf('(')+1,command.indexOf(')')).split('},{');
+			//console.log(args);
 			if (command_type != "create_metric")
 			{
 				output = run[command_type](args);
@@ -133,8 +148,8 @@ recompile = function(block_id, command_block) {
 			output = comment(command);
 		}
 	}
-	console.log("output");
-	console.log(output);
+	//console.log("output");
+	//console.log(output);
 	if (output)
 	{
 		build_commands.update(block_id, {$set : {command : output['command']}});
@@ -142,6 +157,8 @@ recompile = function(block_id, command_block) {
 		build_commands.update(block_id, {$set : {sql_output : output['sql_output']}});
 		build_commands.update(block_id, {$set : {metric_name : output['metric_name']}});
 		build_commands.update(block_id, {$set : {command_block : output['command_block']}});
+		build_commands.update(block_id, {$set : {join_cols : output['join_cols']}});
+		build_commands.update(block_id, {$set : {indices : output['indices']}});
 	}
 	 
 };
@@ -164,7 +181,7 @@ recompile = function(block_id, command_block) {
 
 add_metric = function(args) {
 	//console.log('add metric command');
-	var metric_name = args[0];
+	var metric_name = args[0] ? args[0].replace('{','').replace('}','') : 'your_metric';
 	var metric_name_only = '';
 	if (metric_name.indexOf('/') != -1)
 	{
@@ -174,15 +191,15 @@ add_metric = function(args) {
 	{
 		metric_name_only = metric_name;
 	}
-	var join_table = args[1];
-	var join_cols = args[2].replace('{','').replace('}','').split(':');
+	var join_table = args[1] ? args[1].replace('{','').replace('}','') : 'your_table';
+	var join_cols = args[2] ? args[2].replace('{','').replace('}','').split(':') : '{your:columns}';
 	var option_set = args[3];
 	var metric = metric_library.find({metric_name : metric_name_only}).fetch()[0];
 	var metric_cols = metric.join_cols.replace('{','').replace('}','').split(':');
 	var output_sql = "";
 	if (metric.prep_sql)
 	{
-		output_sql += prep_sql(metric.prep_sql)+"\n";
+		output_sql += prep_sql(metric.prep_sql, join_table)+"\n";
 	}
 	output_sql += 	"CREATE "+table_type("add_"+metric_name)+" AS (\n"+
 					"SELECT a.*"+cols_added(metric.cols_added)+"\n"+
@@ -207,10 +224,12 @@ add_metric = function(args) {
 						sql_output : output_sql,
 						metric_name : metric_name_only,
 						command_block : Session.get("current_command"),
-						active : true	
+						active : true,
+						join_cols : args[2],
+						indices : metric.indices	
 						};
 	//console.log(build_constructor);
-	//metric_library.update(metric['_id'], {$inc : {used : 1}});					
+	metric_library.update(metric['_id'], {$inc : {used : 1}});					
 	//build_commands.insert(build_constructor);
 	return build_constructor;									
 };
@@ -272,10 +291,10 @@ add_join = function(metric_join, driver_join) {
 
 in_builder = function(args) {
 	//I don't think this function works 100% yet. I'm pretty sure it's still half baked.
-	//Yep, this one won't work at all. The commas will cause the initial read to fail. 
+	//Yep, this one won't work at all. The commas will cause the initial read to fail. (update, changed to +)
 	var list_column = args.slice(0,args.indexOf('/'));
-	var list_command = args.slice(args.indexOf('/')+1);
-	var list_options = args.slice(list_command.indexOf('('),list_command.indexOf(')')).split(',');
+	var list_command = args.slice(args.indexOf('/list')+1);
+	var list_options = list_command.split('+');
 	var sql = "";
 	var i = 0;
 	for (opt in list_options)
@@ -290,17 +309,35 @@ in_builder = function(args) {
 		}
 		i++;
 	}
+	sql += ")\n";
 	return sql;
 };
 
+tweener = function(args) {
+	var column = args.slice(0,args.indexOf('/'));
+	var command = args.slice(args.indexOf('/bt')+1);
+	var options = list_command.split('+');
+	var sql = "";
+	sql = column+" between "+options[0]+" and "+options[1]+"\n";
+	return sql;
+}
+
 comparison = function(arg) {
 	//This should work good, except for list
-	var options = {ne : "<>", gt : ">", gte : ">=", lt : "<", lte : "<=", list : in_builder};
+	var options = {ne : "<>", gt : ">", gte : ">=", lt : "<", lte : "<="};
+	var opt_functions = {list : in_builder, bt: tweener};
 	var col = arg.slice(0,arg.indexOf('/'));
 	var opt = arg.slice(arg.indexOf('/')+1);
 	if (arg.indexOf('/') != -1)
 	{
-		return col+" "+options[opt];
+		if (opt in options)
+		{
+			return col+" "+options[opt];
+		}
+		else
+		{
+			return col+" "+options[opt](opt);
+		}
 	}
 	else
 	{
@@ -353,29 +390,30 @@ join_cols = function(cols) {
 };
 
 indices = function(cols) {
-	var separate_cols = cols.split(':');
-	var col_string = '';
-	var i = 1;
-	for (col in separate_cols)
-	{
-		if (i != separate_cols.length)
+		var separate_cols = cols.split(':');
+		var col_string = '';
+		var i = 1;
+		for (col in separate_cols)
 		{
-			col_string += separate_cols[col].replace('{','').replace('}','')+',';
+			if (i != separate_cols.length)
+			{
+				col_string += separate_cols[col].replace('{','').replace('}','')+',';
+			}
+			else
+			{
+				col_string += separate_cols[col].replace('{','').replace('}','');
+			}
+			i++;	
 		}
-		else
-		{
-			col_string += separate_cols[col].replace('{','').replace('}','');
-		}
-		i++;	
-	}
-	return col_string;
+		return col_string;
 };
 
-prep_sql = function(text) {
+prep_sql = function(text, table_name) {
 	var display_text = "--SQL Preview for "+Session.get("metric_name")+":";
 	if (text) 
 	{
-		display_text +='\n'+text;
+		display_text +='\n'+text.replace(/<user_table>/g,table_name);
+		console.log(display_text);
 	}
 	return display_text;
 };
@@ -473,12 +511,17 @@ create = function(args) {
 	//This command is basically a select command, with a few extra arguments (table name, {indices})
 	//console.log(args);
 	//console.log('create command');
-	var table_name = args[0];
-	var what = args[1];
-	var where = args[2];
-	var how = args[3];
-	var indices_pkg = args[4];
-	var output_sql = "CREATE "+table_type(table_name)+" AS (\n";
+	var table_name = args[0] ? args[0].replace('{','').replace('}','') : 'your_table';
+	var what = args[1] ? args[1] : '{your:columns}';
+	var where = args[2] ? args[2].replace('{','').replace('}','') : 'your.table';
+	var how = args[3] ? args[3].replace('{','').replace('}','') : '';
+	var indices_pkg = args[4] ? args[4].replace('{','').replace('}','') : ' ';
+	var metric_search = table_name.slice(table_name.indexOf('_')+1);
+	console.log(metric_search);
+	var metric_find = metric_library.find({metric_name : metric_search}).fetch()[0];
+	var prep_sql = metric_find ? metric_find.prep_sql : '';
+	var output_sql = prep_sql ? prep_sql : '';
+	output_sql += "CREATE "+table_type(table_name)+" AS (\n";
 	output_sql += "SELECT "+selectify(what)+"\n";
 	output_sql += fromify(where)+"\n";
 	output_sql += whereify(how);
@@ -503,7 +546,9 @@ create = function(args) {
 						sql_output : output_sql,
 						metric_name : table_name,
 						command_block : Session.get("current_command"),
-						active : true	
+						active : true,
+						join_cols : args[1],
+						indices : args[4]	
 						};
 	//console.log(build_constructor);
 	var table_name_only ="";
@@ -557,8 +602,8 @@ select = function(args) {
 	//Basic structure will be select({what},from where,{how});
 	//console.log(args);
 	//console.log('select command');
-	var what = args[0];
-	var where = args[1];
+	var what = args[0] ? args[0] : '{your:columns}';
+	var where = args[1] ? args[1].replace('{','').replace('}','') : 'your.table';
 	var how = args[2];
 	var output_sql = "SELECT "+selectify(what)+"\n";
 	output_sql += fromify(where)+"\n";
@@ -576,7 +621,9 @@ select = function(args) {
 						sql_output : output_sql,
 						metric_name : 'Select Stmt',
 						command_block : Session.get("current_command"),
-						active : true	
+						active : true,
+						join_cols : false,
+						indices : false	
 						};
 	//console.log(build_constructor);					
 	//build_commands.insert(build_constructor);
@@ -600,7 +647,7 @@ selectify = function(arg) {
 	}
 	else
 	{
-		cols = arg.replace("{","").replace('}','').split(':');
+		cols = arg.replace('{','').replace('}','').split(':');
 		var i = 1;
 		for (col in cols) 
 		{
@@ -796,18 +843,6 @@ help = function(args) {
 	//console.log(build_constructor);
 	build_commands.insert(build_constructor);
 	return false;
-/*
-Help commands will be:
-add_metric: Basic syntax
-create_metric : Basic syntax
-comment :
-help : 
-select : 
-chain : 
-list : 
-find : 
-save : 
-*/
 }
 
 /////////////////////////////////
@@ -833,9 +868,38 @@ comment = function(text){
 	return build_constructor;
 }
 
+/////////////////////////////////
+//	Raw SQL Functions
+/////////////////////////////////
+
+//No auxiliary functions
+
+raw = function(text){
+	//Posts a comment to the current script in the single line format (i.e. --Comment Text)
+	var today = new Date();
+	var datetime = today.today()+" @ "+today.timeNow();
+	console.log(text);
+	var sql = text+';';
+	var build_constructor = {user_id : Meteor.userId(), 
+							command : "Raw SQL", 
+							metric_name : 'Raw SQL', 
+							sql_output : sql,
+							success : true, 
+							commmand_time : datetime, 
+							output_text : 'Raw SQL added',
+							command_block : Session.get("current_command"),
+							active : true };
+	//console.log('comment');
+	return build_constructor;
+}
+
 run['add_metric'] = add_metric;
 run['create_metric'] = create_metric;
 run['select'] = select;
 run['chain'] = chain;
 run['help'] = help;
 run['create'] = create;
+run['raw'] = raw;
+
+
+*/
