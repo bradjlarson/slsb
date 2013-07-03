@@ -5,14 +5,18 @@
 			<h3 id="search-add-header">Add Metric:</h3>
 		</div>
 		<div class="modal-body">
-			<div id="add_command_line">
-				<label><strong>Please enter a command below (defaults provided):</strong></label>
-				<input class="input-xxlarge" id="search-add-command" placeholder="add_metric(..." data-provide="typeahead" autocomplete="off">		
+			<div id="search-add-body">
+				<legend>Enter some SQL, or choose from the defaults provided:</legend>
+				<div class="span12">		
+				<textarea class="span11 pull-left" id="search-command-input" rows="6" value=""></textarea>
+				<div class="btn-group span11 pull-left">
+	 					<button id="search_create_predict" name="" class="btn btn-inverse span3 text-center search-add">create</btn>
+						<button id="search_add_metric_predict" name="" class="btn btn-inverse span3 text-center search-add">add_metric</btn>
+						<button id="search_select_predict" name="" class="btn btn-inverse span3 text-center search-add">select</btn>
+						<button id="search_raw_predict" name="" class="btn btn-inverse span3 text-center search-add">raw</btn>
+				</div>
+				</div>
 			</div>
-			<br />
-			<br />
-			<br />
-			<br />
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
@@ -93,3 +97,4 @@
 		{{/isolate}}
 	</div>
 </template>
+

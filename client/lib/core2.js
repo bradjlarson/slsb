@@ -58,6 +58,16 @@ merge = function(obj_a, obj_b) {
 	return obj_a;
 }
 
+pkg_merge = function() {
+	var next = [];
+	console.log('starting pkg merge');
+	_.each(arguments, function(arg) { 
+		console.log(arg); 
+		is_empty(arg) ? console.log('skipped') : _.each(extract("sub_args", arg), function(x) { next.push(x); }); 
+	});
+	return tostring(interpose(":",_.uniq(next)));
+}
+
 first_rest = function(first, rest, data, type) {
 	type = truthy(type) ? type : "normal";
 	var types = {
@@ -153,6 +163,84 @@ requirements = function(type, args) {
 			
 		}
 	}
+}
+
+stringify = function(x, z) {
+	return existy(z) ? tostring(interpose(z, x)) : tostring(x);
+}
+
+bookend = function(x,y,z) {
+	console.log(x+y+z);
+	return x + y + z;
+}
+
+from_obj = function(obj) {
+	return _.values(obj);
+}
+
+load_me = function() {
+	var up = []; 
+	_.each(arguments, function(x) {
+		up.push(x);
+	});
+	return up;
+}
+
+obj_if_null = function(x) {
+	return existy(x) ? x : {};
+}
+
+generate_sql = function(type, metric_name, command) {
+	var command = existy(command) ? command : predict(type, fetch(metric_name, "metric_library"));
+	var command_name = extract("command_name", command);
+	var args = extract("args", command);
+	return run(command_name, args).sql_output;
+}
+
+
+
+predict = function(type, metric, add_to) {
+	console.log(metric);
+	console.log(add_to);
+	var predictions = {
+		create : function() {
+			var args = load_me(metric.metric_name, pkg_merge(metric.cols_added, metric.join_cols, metric.indices), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql)
+			return generate_command("create", args);
+		},
+		add_metric : function() {
+			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins"), pkg_merge("your:indices", metric.indices)) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols), pkg_merge(add_to.indices, metric.indices));
+		},
+		select : function() {
+			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols)), metric.join_src, metric.extra_sql);
+		},
+		raw : function() {
+			return generate_command("raw", [generate_sql("create", metric.metric_name)]);
+		}
+	};
+	return _.result(predictions, type);
+}
+
+generate_command = function(type, args) {
+	var commands = {
+		"create" : splat(function(metric_name, what, where, how, indices, prep_sql) {
+			return bookend("create({", stringify(arguments, "},{"), "});");
+			//return "create({"+tostring(interpose("},{", arguments))+"});";
+		}),
+		"add_metric" : splat(function(metric_name, to, joins, indices) {
+			return bookend("add_metric({", stringify(arguments, "},{"), "});");
+		}),
+		"select" : splat(function(what, where, how) {
+			console.log('select');
+			console.log(arguments);
+			return bookend("select({", stringify(arguments, "},{"), "});");
+		}),
+		"raw" : splat(function(sql_preview) {
+			return bookend("raw({", sql_preview, "});");
+		})
+	};
+	console.log(commands);
+	console.log(args);
+	return commands[type](args);
 }
 
 transform = function(type, args, to) {
@@ -282,7 +370,7 @@ start_obj = function(output) {
 fetch = function(what, where) {
 	var places = {
 		metric_library : _.first(metric_library.find({metric_name : what}).fetch()),
-		build_commands : _.first(build_commands.find({active : true}, {sort : {command_time : -1}}).fetch())
+		build_commands : _.first(build_commands.find({active : true, table_name : {$ne : ""}}, {sort : {command_time : -1}}).fetch())
 	};
 	return places[where];
 }
@@ -366,6 +454,7 @@ run = function(command, args) {
 			var first = table_name(name, "get");
 			results.sql_output = prep + first.begin + selecting(what) + from(where) + conditions(how) + specify(indices) + first.end +";";
 			results.output_text = "SQL to create table: "+name+" generated.";
+			results.table_name = "get_"+extract("sub_arg_name", name);
 			results.metric_name = extract("sub_arg_name", name);
 			results.command = "Create Table Command...";
 			results.indices = indices;
@@ -386,6 +475,7 @@ run = function(command, args) {
 			results.sql_output = prep + first.begin + second + third + fourth + fifth + sixth + first.end +";";  
 			results.command = "Add Metric Command...";
 			results.output_text = "SQL to add "+extract("sub_arg_name", name)+" to "+extract("sub_arg_name", where)+" generated.";
+			results.table_name = "add_"+extract("sub_arg_name", name);
 			results.metric_name = extract("sub_arg_name", name);
 			results.indices = indices ? indices : adding_to.indices;
 			results.join_cols = adding_to.join_cols; //inherits join columns from source table
@@ -397,6 +487,7 @@ run = function(command, args) {
 			results.output_text = "Metric: "+metric_name+" added to the library";
 			results.command = "Create Metric Command...";
 			results.metric_name = "";
+			results.table_name = "";
 			results.indices = "";
 			results.join_cols = "";
 			results.columns = "";
@@ -407,6 +498,7 @@ run = function(command, args) {
 			results.sql_output = selecting(what) + from(where) + conditions(how) +";";
 			results.output_text = "SQL for select stmt generated.";
 			results.metric_name = "select stmt";
+			results.table_name = "";
 			results.command = "Select Command...";
 			results.columns = what;
 			results.indices = "";
@@ -418,6 +510,7 @@ run = function(command, args) {
 			results.command = "Raw SQL Command...";
 			results.output_text = "SQL added to script";
 			results.metric_name = "raw sql";
+			results.table_name = "";
 			results.columns = "";
 			results.indices = "";
 			results.join_cols = "";
@@ -428,12 +521,12 @@ run = function(command, args) {
 			results.command = "Comment Command...";
 			results.output_text = "Comment added to script";
 			results.columns = "";
+			results.table_name = "";
 			results.indices = "";
 			results.join_cols = "";
 			results.metric_name = "";			
 		})
 	}
-	results.command = command;
 	commands[command](args);
 	//_.result(commands, command(args));
 	return results;
@@ -514,3 +607,21 @@ pre_run_check = function(command) {
 		return true;
 	}
 };
+
+proxy_metric = function() {
+	var metric = {
+		collection: "",
+		cols_added: "",
+		create_time: "",
+		creator: "",
+		description: "",
+		extra_sql: "",
+		indices: "",
+		join_cols: "",
+		join_src: "",
+		metric_name: "",
+		prep_sql: "",
+		used: ""
+	};
+	return merge(metric, obj);
+}

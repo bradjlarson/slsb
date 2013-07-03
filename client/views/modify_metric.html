@@ -1,7 +1,7 @@
 <template name="modify">
 	<div class="span3">
 		<div class="input-append">
-			<input id="modify_query" type="text" class="input-medium" placeholder="field:condition">
+			<input id="modify_query" type="text" class="input-medium" placeholder="metric_name">
 			<button id="modify_search" class="btn btn-inverse">Search</button>
 		</div>
 		<div>
@@ -75,17 +75,18 @@
 					<td><b>Times Used:</b></td>
 					<td><input class="modify_text uneditable-input" name="used" type="text" value="{{used}}" readonly></td>
 				</tr>
-			</table>				
+			</table>
+							
 		{{/each}}
 		{{/isolate}}
 	</div>
 	{{#isolate}}
-	{{#if metric_selected}}
-	<div class="span1">
-		<button id="modify_save" class="btn btn-inverse pull-right">Save</button>
-		<button id="delete_metric" class="btn btn-danger pull-right">Delete</button>
-	</div>
-	{{/if}}
+	{{#each metric_selected}}
+		<div class="span1">
+			<button id="modify_save" class="btn btn-inverse pull-right">Save</button>
+			<button id="delete_metric" class="btn btn-danger pull-right">Delete</button>
+		</div>
+	{{/each}}
 	{{/isolate}}
 </template>			
 					

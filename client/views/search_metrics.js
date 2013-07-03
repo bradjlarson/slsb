@@ -22,39 +22,37 @@ Template.search.events = {
 		var selected = event.target;
 		var metric_id = $(selected).attr('id');
 		var metric_name = $(selected).attr('name');
-		var this_metric = metric_library.find({_id : metric_id}).fetch()[0];
-		//$('#search-add-command').val('add_metric('+metric_name+',');
-		//Need to construct the recommended create and add_metric commands
-		var merged_pkgs = pkg_merge(this_metric.join_cols, this_metric.cols_added);
-		var create_command = 'create({get_'+metric_name+'},'+merged_pkgs;
-		create_command += ',{'+this_metric.join_src+'},{'+this_metric.extra_sql+'},'+this_metric.indices+');';
-		var data_source = Session.get("last_table") ? Session.get("last_table") : "your_table";
-		//console.log(data_source);
-		var add_command = 'add_metric({'+metric_name+'},{'+data_source+'},'+this_metric.join_cols+');';
-		var select_command = 'select('+merged_pkgs+',{'+this_metric.join_src+'},{'+this_metric.extra_sql+'});';
-		var defaults = [];
-		defaults.push(add_command);
-		defaults.push(create_command);
-		defaults.push(select_command);
-		//console.log(add_command);
-		//console.log(defaults);
-		$('#search-add-command').val('');
-		$('#search-add-command').typeahead({source : defaults});
+		Session.set("search_metric_name", metric_name);
 		$('#search_add').modal('show');
-		//console.log(this_metric);
-		//console.log(this_metric.metric_name)
-		//current_script.insert(this_metric);
+		/*
+		$('#search-add').name('');
+		$('#search-add-command').typeahead({source : defaults});
+		
+		*/
 	},
 	'click .search-submit' : function(event) {
-		var command = $('#search-add-command').val();
+		var command = $('#search-command-input').val();
 		console.log('search add');
 		console.log(command);
 		if (command)
 		{
-			script_eval(command);			
+			submit_command(command);			
 		}
 		$('#search_add').modal('hide');
-	}
+	},
+	'click #search_create_predict' : function(event) {
+		var command = predict("create", fetch(Session.get("search_metric_name"), "metric_library"));
+		$('#search-command-input').val(command);
+	},
+	'click #search_add_metric_predict' : function(event) {
+		$('#search-command-input').val(predict("add_metric", fetch(Session.get("search_metric_name"), "metric_library"), fetch("", "build_commands")));
+	},
+	'click #search_select_predict' : function(event) {
+		$('#search-command-input').val(predict("select", fetch(Session.get("search_metric_name"), "metric_library")));
+	},
+	'click #search_raw_predict' : function(event) {
+		$('#search-command-input').val(predict("raw", fetch(Session.get("search_metric_name"), "metric_library")));
+	},
 }
 
 //Search
