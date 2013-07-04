@@ -121,7 +121,10 @@ Template.side_bar.events = {
 		Session.set('table_selected', false);},
 	'click #launch_modify' : function(event) {
 		$('#main').html(Meteor.render(Template.modify));
-		Session.set('metric_searched_m', false);},					
+		Session.set('metric_searched_m', false);},
+	'click #launch_scripts' : function(event) {
+		$('#main').html(Meteor.render(Template.my_scripts));
+		Session.set('script_selected', false);},										
 	'click #launch_settings' : function(event) {
 		$('#main').html(Meteor.render(Template.settings));},
 	'click #launch_feedback' : function(event) {

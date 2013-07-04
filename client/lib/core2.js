@@ -16,6 +16,8 @@ keep = function(data, text) { return contains(data, text) ? data.slice(position(
 
 splat = function(fun) { return function(array) { return fun.apply(null, array); }; };
 
+default_to = function(x, y) { return truthy(x) ? x : y; };
+
 cat = function() { 
 	var head = _.first(arguments); 
 	if (existy(head)) 
@@ -45,31 +47,49 @@ interpose = function(inter, coll) {
 
 tostring = function(obj) { return _.reduce(obj, function(start, next) { return start + next; }, ""); };
 
-extract = function(type, data) {
-	var types = {command_name : "({", commands : "});", args : "},{", sub_args : ":", sub_arg_name : "/", options : "/", options_name: "+", options_args : "/"};
-	return parser(type, types[type], data);
+stringify = function(x, z) {
+	return existy(z) ? tostring(interpose(z, x)) : tostring(x);
+}
+
+bookend = function(x,y,z) {
+	console.log(x+y+z);
+	return x + y + z;
+}
+
+from_obj = function(obj) {
+	return _.values(obj);
+}
+
+load_me = function() {
+	var up = []; 
+	_.each(arguments, function(x) {
+		up.push(x);
+	});
+	return up;
+}
+
+cat_array = function(short_array, long_array) {
+	var i = 0;
+	return _.map(short_array, function(item) {
+		var temp = existy(long_array[i]) ? short_array[i]+" "+long_array[i] : short_array[i];
+		i ++;
+		return temp; 
+	});
+}
+
+extend_array = function(array, length) {
+	return false;
 }
 
 merge = function(obj_a, obj_b) {
 	_.each(obj_b, function(value, key) {
-		obj_a[key] = value;
+		obj_a[key] = default_to(value, obj_a[key]);
 	});
-	console.log(obj_a);
 	return obj_a;
 }
 
-pkg_merge = function() {
-	var next = [];
-	console.log('starting pkg merge');
-	_.each(arguments, function(arg) { 
-		console.log(arg); 
-		is_empty(arg) ? console.log('skipped') : _.each(extract("sub_args", arg), function(x) { next.push(x); }); 
-	});
-	return tostring(interpose(":",_.uniq(next)));
-}
-
 first_rest = function(first, rest, data, type) {
-	type = truthy(type) ? type : "normal";
+	type = default_to(type, "normal");
 	var types = {
 		normal : function() {
 			var args = process(data);
@@ -98,13 +118,18 @@ first_rest = function(first, rest, data, type) {
 	return _.result(types, type);
 }
 
-cat_array = function(short_array, long_array) {
-	var i = 0;
-	return _.map(short_array, function(item) {
-		var temp = existy(long_array[i]) ? short_array[i]+" "+long_array[i] : short_array[i];
-		i ++;
-		return temp; 
+extract = function(type, data) {
+	var types = {command_name : "({", commands : "});", args : "},{", sub_args : ":", sub_arg_name : "/", options : "/", options_name: "+", options_args : "/"};
+	return parser(type, types[type], data);
+}
+
+pkg_merge = function() {
+	var next = [];
+	console.log('starting pkg merge');
+	_.each(arguments, function(arg) {  
+		is_empty(arg) ? console.log('skipped') : _.each(extract("sub_args", arg), function(x) { next.push(x); }); 
 	});
+	return tostring(interpose(":",_.uniq(next)));
 }
 
 prefix = function(fix, data) {
@@ -115,7 +140,7 @@ prefix = function(fix, data) {
 
 add_option = function(option, data) {
 	return _.map(data, function(item) {
-		return contains(item, "/") ? item : item + option;
+		return contains(item, "/") ? item + '+'+ stringify(_.rest(extract("options_args", option)), "+") : item + option;
 	});
 }
 
@@ -165,30 +190,6 @@ requirements = function(type, args) {
 	}
 }
 
-stringify = function(x, z) {
-	return existy(z) ? tostring(interpose(z, x)) : tostring(x);
-}
-
-bookend = function(x,y,z) {
-	console.log(x+y+z);
-	return x + y + z;
-}
-
-from_obj = function(obj) {
-	return _.values(obj);
-}
-
-load_me = function() {
-	var up = []; 
-	_.each(arguments, function(x) {
-		up.push(x);
-	});
-	return up;
-}
-
-obj_if_null = function(x) {
-	return existy(x) ? x : {};
-}
 
 generate_sql = function(type, metric_name, command) {
 	var command = existy(command) ? command : predict(type, fetch(metric_name, "metric_library"));
@@ -196,8 +197,6 @@ generate_sql = function(type, metric_name, command) {
 	var args = extract("args", command);
 	return run(command_name, args).sql_output;
 }
-
-
 
 predict = function(type, metric, add_to) {
 	console.log(metric);
@@ -375,11 +374,13 @@ fetch = function(what, where) {
 	return places[where];
 }
 
-add_to = function(what, where) {
+insert_into = function(what, where) {
 	var places = {
 		metric_library : metric_library.insert(what),
 		build_commands : build_commands.insert(what)
 	};
+	console.log(what);
+	console.log(where);
 	return _.result(places[where]);
 }
 
@@ -444,6 +445,43 @@ check_joins = function(where) {
 	return false;
 }
 
+get_timestamp = function() {
+	var today = new Date;
+	return today.today() + " @ " + today.timeNow();
+}
+
+proxy_metric = function(obj, type) {
+	type = default_to(type, "obj");
+	var metric = {
+		metric_name: "",
+		cols_added: "",
+		join_src : "",
+		join_cols: "",
+		extra_sql: "",
+		indices: "",
+		prep_sql: "",
+		collection: "",
+		description: "",
+		create_time: get_timestamp(),
+		creator: Meteor.userId(),
+		used: 0
+	};
+	var types = {
+		'array' : function() {
+			return merge(metric, _.object(_.keys(metric), obj));
+		},
+		'object' : function() {
+			return merge(metric, obj);
+		}
+	};
+	
+	console.log(obj);
+	console.log(type);
+	console.log(_.result(types, type));
+	return _.result(types, type);
+}
+
+
 run = function(command, args) {
 	var results = {};
 	var commands = {
@@ -481,10 +519,12 @@ run = function(command, args) {
 			results.join_cols = adding_to.join_cols; //inherits join columns from source table
 			results.columns = _.union(adding_to.columns, metric.cols_added);
 		}),
-		create_metric : splat(function(metric_name, cols_added, join_src, join_cols, indices, extra_sql, prep_sql, collection, description) {
+		create_metric : splat(function(metric_name, cols_added, join_src, join_cols, extra_sql, indices, prep_sql, collection, description) {
 			//requirements("create_metric", arguments);
-			build_metric(metric_name, cols_added, join_src, join_cols, indices, extra_sql, prep_sql, collection, description);
-			results.output_text = "Metric: "+metric_name+" added to the library";
+			var args = [default_to(metric_name, "metric_name"),default_to(cols_added, "your:columns"),default_to(join_src, "your.table"),default_to(join_cols, "your:joins"),default_to(extra_sql, ""),default_to(indices, "your:indices"),default_to(prep_sql, ""),default_to(collection, ""),default_to(description, "")];
+			console.log(args);
+			insert_into(proxy_metric(args, "array"), "metric_library");
+			results.output_text = "Metric: " + default_to(metric_name, "metric_name") + " added to the library";
 			results.command = "Create Metric Command...";
 			results.metric_name = "";
 			results.table_name = "";
@@ -550,7 +590,7 @@ submit_command = function(command) {
 		output = merge(output, results);
 		output = check(output);
 		console.log(output);
-		add_to(output, "build_commands");
+		insert_into(output, "build_commands");
 		return true;
 	}
 }
@@ -608,20 +648,3 @@ pre_run_check = function(command) {
 	}
 };
 
-proxy_metric = function() {
-	var metric = {
-		collection: "",
-		cols_added: "",
-		create_time: "",
-		creator: "",
-		description: "",
-		extra_sql: "",
-		indices: "",
-		join_cols: "",
-		join_src: "",
-		metric_name: "",
-		prep_sql: "",
-		used: ""
-	};
-	return merge(metric, obj);
-}
