@@ -103,7 +103,7 @@ first_rest = function(first, rest, data, type) {
 			var args = process_special(data);
 			var one = first + _.first(args) + "\n";
 			var others = _.map(_.rest(args), function(clause) {
-				return rest + clause + "\n";
+				return (checker(clause.slice(0,8), ["GROUP BY", "ORDER BY"])) ? clause + "\n" : rest + clause + "\n";
 			});	
 			return _.union(one, others);
 		},
@@ -113,7 +113,7 @@ first_rest = function(first, rest, data, type) {
 				return rest + clause + "\n";
 			});	
 			return _.union(one, others);
-		}
+		}	
 	}
 	return _.result(types, type);
 }
@@ -138,6 +138,12 @@ prefix = function(fix, data) {
 	});
 }
 
+checker = function(x, y) {
+	return _.reduce(y, function(memo, next) {
+		return (next == x) ? true : memo;
+	}, false);
+}
+
 add_option = function(option, data) {
 	return _.map(data, function(item) {
 		return contains(item, "/") ? item + '+'+ stringify(_.rest(extract("options_args", option)), "+") : item + option;
@@ -157,7 +163,14 @@ process_special = function(data) {
 	return _.map(data, function(item) {
 		var name = extract("sub_arg_name", item);
 		var options = extract("options_args", item);
-		return truthy(options) ? transform(name, options) : name;
+		if (checker(name, ["gb", "ob"]))
+		{
+			return truthy(options) ? transform(name, options) : name;
+		}
+		else
+		{
+			return truthy(options) ? transform(_.first(options), options, name) : name;
+		}
 	});
 }
 
@@ -280,11 +293,26 @@ transform = function(type, args, to) {
 		d : function() {
 			return "DISTINCT "+to;
 		},
-		list : function() {
-			return " IN ("+tostring(interpose(",", args))+")";
+		in : function() {
+			return to+" IN ("+tostring(interpose(",", _.rest(args)))+")";
+		},
+		nin : function() {
+			return to+" NOT IN ("+tostring(interpose(",", _.rest(args)))+")";
+		},
+		lk : function() {
+			return to+" LIKE ('"+args[1]+"')";
+		},
+		lk_any : function() {
+			return to+" LIKE ANY ('"+stringify("','", _.rest(args))+"')";
+		},
+		nlk : function() {
+			return to+" NOT LIKE ('"+args[1]+"')";
+		},
+		nlk_any : function() {
+			return to+" NOT LIKE ANY ('"+stringify("','", _.rest(args))+"')";
 		},
 		bt : function() {
-			return " BETWEEN "+args[0]+" AND "+args[1];
+			return " BETWEEN "+args[1]+" AND "+args[2];
 		},
 		rj : function() {
 			return "RIGHT JOIN " + to;
@@ -423,6 +451,7 @@ from = function(where) {
 }
 
 conditions = function(how) {
+	//need to update this to 
 	var clauses = extract("sub_args", how);
 	return tostring(first_rest("WHERE ", "AND ", clauses, "special"));
 }
