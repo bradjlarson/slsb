@@ -113,7 +113,14 @@ first_rest = function(first, rest, data, type) {
 				return rest + clause + "\n";
 			});	
 			return _.union(one, others);
-		}	
+		}, 
+		func : function() {
+			var one = first(data) + "\n";
+			var others = _.map(_.rest(data), function(clause) {
+				return rest(clause) + "\n";
+			});
+			return _.union(one, others);
+		}		
 	}
 	return _.result(types, type);
 }
@@ -203,58 +210,6 @@ requirements = function(type, args) {
 	}
 }
 
-
-generate_sql = function(type, metric_name, command) {
-	var command = existy(command) ? command : predict(type, fetch(metric_name, "metric_library"));
-	var command_name = extract("command_name", command);
-	var args = extract("args", command);
-	return run(command_name, args).sql_output;
-}
-
-predict = function(type, metric, add_to) {
-	console.log(metric);
-	console.log(add_to);
-	var predictions = {
-		create : function() {
-			var args = load_me(metric.metric_name, pkg_merge(metric.cols_added, metric.join_cols, metric.indices), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql)
-			return generate_command("create", args);
-		},
-		add_metric : function() {
-			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins"), pkg_merge("your:indices", metric.indices)) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols), pkg_merge(add_to.indices, metric.indices));
-		},
-		select : function() {
-			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols)), metric.join_src, metric.extra_sql);
-		},
-		raw : function() {
-			return generate_command("raw", [generate_sql("create", metric.metric_name)]);
-		}
-	};
-	return _.result(predictions, type);
-}
-
-generate_command = function(type, args) {
-	var commands = {
-		"create" : splat(function(metric_name, what, where, how, indices, prep_sql) {
-			return bookend("create({", stringify(arguments, "},{"), "});");
-			//return "create({"+tostring(interpose("},{", arguments))+"});";
-		}),
-		"add_metric" : splat(function(metric_name, to, joins, indices) {
-			return bookend("add_metric({", stringify(arguments, "},{"), "});");
-		}),
-		"select" : splat(function(what, where, how) {
-			console.log('select');
-			console.log(arguments);
-			return bookend("select({", stringify(arguments, "},{"), "});");
-		}),
-		"raw" : splat(function(sql_preview) {
-			return bookend("raw({", sql_preview, "});");
-		})
-	};
-	console.log(commands);
-	console.log(args);
-	return commands[type](args);
-}
-
 transform = function(type, args, to) {
 	var transforms = {
 		gb : function() { 
@@ -309,7 +264,7 @@ transform = function(type, args, to) {
 			return to+" NOT LIKE ('"+args[1]+"')";
 		},
 		nlk_any : function() {
-			return to+" NOT LIKE ANY ('"+stringify("','", _.rest(args))+"')";
+			return to+" NOT LIKE ANY ('"+stringify(_.rest(args), "','")+"')";
 		},
 		bt : function() {
 			return " BETWEEN "+args[1]+" AND "+args[2];
@@ -328,6 +283,12 @@ transform = function(type, args, to) {
 		},
 		w : function() {
 			return ", " + to;
+		},
+		u : function() {
+			return "UNION \n" + selecting(stringify(_.rest(args), ":")) + from(to); 
+		},
+		ua : function() {
+			return "UNION ALL \n" + selecting(stringify(_.rest(args), ":")) + from(to); 
 		},
 		ne : function() {
 			return " <> ";
@@ -503,13 +464,59 @@ proxy_metric = function(obj, type) {
 			return merge(metric, obj);
 		}
 	};
-	
-	console.log(obj);
-	console.log(type);
-	console.log(_.result(types, type));
 	return _.result(types, type);
 }
 
+generate_sql = function(type, metric_name, command) {
+	var command = existy(command) ? command : predict(type, fetch(metric_name, "metric_library"));
+	var command_name = extract("command_name", command);
+	var args = extract("args", command);
+	return run(command_name, args).sql_output;
+}
+
+predict = function(type, metric, add_to) {
+	console.log(metric);
+	console.log(add_to);
+	var predictions = {
+		create : function() {
+			var args = load_me(metric.metric_name, pkg_merge(metric.cols_added, metric.join_cols, metric.indices), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql)
+			return generate_command("create", args);
+		},
+		add_metric : function() {
+			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins"), pkg_merge("your:indices", metric.indices)) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols), pkg_merge(add_to.indices, metric.indices));
+		},
+		select : function() {
+			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols)), metric.join_src, metric.extra_sql);
+		},
+		raw : function() {
+			return generate_command("raw", [generate_sql("create", metric.metric_name)]);
+		}
+	};
+	return _.result(predictions, type);
+}
+
+
+
+generate_command = function(type, args) {
+	var commands = {
+		"create" : splat(function(metric_name, what, where, how, indices, prep_sql) {
+			return bookend("create({", stringify(arguments, "},{"), "});");
+			//return "create({"+tostring(interpose("},{", arguments))+"});";
+		}),
+		"add_metric" : splat(function(metric_name, to, joins, indices) {
+			return bookend("add_metric({", stringify(arguments, "},{"), "});");
+		}),
+		"select" : splat(function(what, where, how) {
+			console.log('select');
+			console.log(arguments);
+			return bookend("select({", stringify(arguments, "},{"), "});");
+		}),
+		"raw" : splat(function(sql_preview) {
+			return bookend("raw({", sql_preview, "});");
+		})
+	};
+	return commands[type](args);
+}
 
 run = function(command, args) {
 	var results = {};
@@ -594,8 +601,47 @@ run = function(command, args) {
 			results.indices = "";
 			results.join_cols = "";
 			results.metric_name = "";			
+		}),
+		drop : splat(function(table) {
+			results.sql_output = bookend("DROP TABLE ", table, ";\n");
+			results.command = "Drop command...";
+			results.output_text = "Drop table SQL added to script";
+			results.columns = "";
+			results.table_name = "";
+			results.indices = "";
+			results.join_cols = "";
+			results.metric_name = "";
+		}),
+		chain : splat(function(all_metrics, to) {
+			var anchor = [];
+			var metric_records = _.map(extract("sub_args", all_metrics), function(item) {return fetch(item, "metric_library");});
+			if (existy(to))
+			{
+				_.reduce(metric_records, function(memo, next) {
+					anchor.push(predict("add_metric", next, memo));
+					return next;
+				}, fetch(to, "metric_library"));
+			}
+			else
+			{
+				anchor.push([predict("create", _.first(metric_records))]);
+				_.reduce(_.rest(metric_records), function(memo, next) {
+					anchor.push(predict("add_metric", next, memo));
+					return next;
+				}, _.first(metric_records));
+			}
+			console.log(anchor);
+			console.log(stringify(anchor));
+			process_block(stringify(anchor));
+			results.command = "Chain command...";
+			results.output_text = "Build commands for those metrics added to script";
+			results.columns = "";
+			results.table_name = "";
+			results.indices = "";
+			results.join_cols = "";
+			results.metric_name = "";
 		})
-	}
+	};
 	commands[command](args);
 	//_.result(commands, command(args));
 	return results;
@@ -627,6 +673,7 @@ submit_command = function(command) {
 process_block = function(block) {
 	//requirements("process_block", arguments);
 	var commands = extract("commands", block);
+	console.log(commands);
 	_.each(commands, submit_command);
 };
 

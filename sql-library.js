@@ -9,6 +9,7 @@ feedback = new Meteor.Collection("feedback");
 docs = new Meteor.Collection("docs");
 help_docs = new Meteor.Collection("help");
 export_docs = new Meteor.Collection("export_docs");
+scripts = new Meteor.Collection("scripts");
 
 if (Meteor.isServer) {
 	
@@ -44,6 +45,9 @@ Meteor.publish("export_docs", function() {
 	return export_docs.find({user_id : this.userId});
 });
 
+Meteor.publish("scripts", function() {
+	return scripts.find({user_id : this.userId});
+});
 
 
 
@@ -72,7 +76,7 @@ Meteor.startup(function() {
 	Session.setDefault("current_metric_m", false);
 	Session.setDefault("metric_searched_m", false);
 	Session.setDefault("history_search_query", false);
-	Session.setDefault("export_flag", false);	
+	Session.setDefault("export_flag", true);	
 });
 /////////////////////////////////////////////////////	
 //Subscriptions
@@ -88,6 +92,7 @@ Meteor.subscribe("docs");
 Meteor.subscribe("help_docs");
 Meteor.subscribe("export_docs");
 Meteor.subscribe("settings");
+Meteor.subscribe("scripts");
 
 
 /////////////////////////////////////////////////////
@@ -132,7 +137,7 @@ Template.side_bar.events = {
 	'click #launch_docs' : function(event) {
 		$('#main').html(Meteor.render(Template.docs));},
 	'click #launch_export' : function(event) {
-		$('#main').html(Meteor.render(Template.export_docs));}												
+		$('#main').html(Meteor.render(Template.export_main));}												
 };
 
 /////////////////////////////////////////////////////

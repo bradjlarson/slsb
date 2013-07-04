@@ -1,26 +1,26 @@
 <template name="settings">
-	<div class="span8 row-fluid">
-		<ul class="nav nav-tabs">
-			<li class="active"><a href="#" data-toggle="tab" name="Preferences" class="settings_option">Preferences</a></li>
-			<li><a href="#" data-toggle="tab" name="Account" class="settings_option">Account</a></li>
-		</ul>
+	<div class="span4 offset1">
+	{{#isolate}}
+	<form>
+		<fieldset>
+			<legend>Settings {{#isolate}}<button class="btn btn-primary pull-right" id="settings_save">Settings Saved.</button>{{/isolate}}</legend>
+			
+			<label>Name:</label>
+			<input class="acct_setting" type="text" id="name">
+			<label>Email:</label>
+			<input class="acct_setting" type="text" id="email">
+			{{#isolate}}
+			<label>Syntax:</label>
+			<select class="acct_setting" id="num_tasks">
+				<option id="td_syntax" value="Teradata">Teradata</option>
+				<option id="mysql_syntax" value="MySQL">MySQL</option>
+			</select>
+			{{/isolate}}			
+		</fieldset>
+	</form>
+	{{/isolate}}
+	<div class="btn-group pull-left">
+		<button class="btn btn-inverse" id="join_group">Join an organization</button>
 	</div>
-	<div class="span8 row-fluid">
-		<form class="form-horizontal">
-		{{#each selected_settings}}
-			<div class="control-group">
-				<label class="control-label" for="{{setting_name}}">{{setting_name}}</label>
-				<div class="controls">
-					<select id="{{setting_name}}">
-					{{#each options}}
-						<option>{{option_text}}</option>
-					{{/each}}
-					</select>
-				</div>
-			</div>
-		{{/each}}
-		<button class="btn" type="submit">Save Settings</button>
-		</form>
-	</div>				
-</template>							
-							
+	</div>
+</template>

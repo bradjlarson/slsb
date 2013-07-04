@@ -12,7 +12,7 @@ metric_name : String,
 Metric Library Structure:
 {
 metric_name: String,
-cols_add: String,
+cols_added: String,
 join_src: String,
 join_cols: String,
 extra_sql: String,
@@ -23,6 +23,17 @@ description: String,
 creator: Meteor.userId,
 create_time: time_stamp,
 used: integer
+}
+
+Scripts Structure: 
+{
+script_name: String,
+description: String,
+user_id: Meteor.userId,
+creator: Meteor.userId,
+create_time: time_stamp,
+build_commands : array of build_command objects
+sql_output : Concatenated SQL from build_command objects	
 }
 
 Databases Structure: (Changing to one collection for dbs, one for tables, and one for columns. way easier. )
