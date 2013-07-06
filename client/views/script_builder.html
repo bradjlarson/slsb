@@ -1,6 +1,26 @@
 <template name="script_builder">
-	<script src="../lib/mousetrap/mousetrap.min.js"></script>
-	{{key_cuts}}
+	<div id="script_save_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="prep_label" aria-hidden="true">
+		<div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="submit_label">Save Script:</h3>
+		 </div>
+		 <div class="modal-body">
+			<div class="submit_field">
+				<p>
+				<input type="text" id="script_name" class="input-large" placeholder="Script name...">
+				</p>
+			</div>
+			<div class="submit_field">
+				<p>
+				<textarea id="script_desc" rows="3" cols="200" class="span12" placeholder="Enter a description here..."></textarea>
+				</p>
+			</div>					
+		 </div>
+		 <div class="modal-footer">
+		    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		    <button data-dismiss="modal" id="save_script" class="btn btn-primary">Save</button>
+		 </div>
+	</div>
 	<div class="row-fluid span10">
 		<div class="span5">
 			<h3 class="text-center page-header">Script Builder:</h3>

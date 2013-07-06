@@ -366,7 +366,8 @@ fetch = function(what, where) {
 insert_into = function(what, where) {
 	var places = {
 		metric_library : metric_library.insert(what),
-		build_commands : build_commands.insert(what)
+		build_commands : build_commands.insert(what),
+		scripts : scripts.insert(what)
 	};
 	console.log(what);
 	console.log(where);
@@ -378,7 +379,7 @@ table_name = function(name, type) {
 	var beginning = {m : "MULTISET", v: "VOLATILE"};
 	var ending = {v : "ON COMMIT PRESERVE ROWS"};
 	var extra_sql = truthy(options) ? _.reduce(options, function(memo, opt) { return memo + beginning[opt] + " ";},"") : "";
-	var begin_sql = "CREATE " + extra_sql + "TABLE "+type+"_" + extract("sub_arg_name", name) + " as (\n";
+	var begin_sql = "CREATE " + extra_sql + "TABLE "+type+"_" + extract("sub_arg_name", name) + " AS (\n";
 	var end_sql = truthy(options) ? _.reduce(options, function(memo, opt) { return memo + _.has(ending, opt) ? ending[opt] : "";}) : "";
 	var result = {
 		begin : begin_sql,
@@ -419,7 +420,7 @@ conditions = function(how) {
 
 specify = function(things) {
 	var indices = extract("sub_args", things);
-	return "WITH DATA PRIMARY INDEX("+tostring(interpose(",", indices))+")\n";
+	return ") WITH DATA PRIMARY INDEX("+tostring(interpose(",", indices))+")\n";
 }
 
 join_on = function(primary, secondary) {
@@ -524,7 +525,7 @@ run = function(command, args) {
 		create : splat(function(name, what, where, how, indices, prep_sql) {
 			//requirements("create", arguments);
 			var metric = fetch(extract("sub_arg_name", name), "metric_library");
-			var prep = truthy(metric) ? _.has(metric, "prep_sql") ? metric.prep_sql : "" : ""
+			var prep = truthy(metric) ? _.has(metric, "prep_sql") ? metric.prep_sql + "\n" : "" : ""
 			var first = table_name(name, "get");
 			results.sql_output = prep + first.begin + selecting(what) + from(where) + conditions(how) + specify(indices) + first.end +";";
 			results.output_text = "SQL to create table: "+name+" generated.";
@@ -539,7 +540,7 @@ run = function(command, args) {
 			//requirements("add_metric", arguments);
 			var metric = fetch(extract("sub_arg_name", name), "metric_library");
 			var adding_to = fetch(extract("sub_arg_name", where), "build_commands");
-			var prep = _.has(metric, "prep_sql") ? metric.prep_sql : "";
+			var prep = _.has(metric, "prep_sql") ? metric.prep_sql+"\n" : "";
 			var first = table_name(name, "add");
 			var second = selecting("*", metric.cols_added);
 			var third = from(contains(where, "/") ? extract("sub_arg_name", where) + ":" + metric.join_src +"/"+ extract("options", where) : where+":"+ metric.join_src+"/lj");
@@ -724,3 +725,21 @@ pre_run_check = function(command) {
 	}
 };
 
+build_script = function(blocks, name, desc) {
+	console.log(blocks);
+	var commands = _.pluck(blocks, 'command_block');
+	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
+	console.log(commands);
+	var obj = {
+		script_name: name,
+		description: desc,
+		user_id: Meteor.userId(),
+		creator: Meteor.userId(),
+		create_time: get_timestamp(),
+		build_commands : commands,
+		sql_output : sql_output
+	};
+	console.log(obj);
+	insert_into(obj, 'scripts');
+	return obj;
+}

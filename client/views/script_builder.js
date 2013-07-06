@@ -86,6 +86,7 @@ Template.script_builder.events = {
 			if (event.target.value)
 			{
 				process_block(event.target.value);
+				$('#save_current_script').html('Save');
 			}
 		}
 		//event.target.value = '';
@@ -96,6 +97,19 @@ Template.script_builder.events = {
 		{
 			build_commands.update(metrics[metric]['_id'], {$set : {active : false}});
 		}
+	},
+	'click #save_current_script' : function(event) {
+		$('#script_save_modal').modal('show');
+		/*
+		var metrics = build_commands.find({active : true}).fetch();
+		build_script(metrics);
+		$(event.target).html("Saved!");
+		*/
+	},
+	'click #save_script' : function(event) {
+		var blocks = build_commands.find({active : true}).fetch();
+		build_script(blocks, $('#script_name').val(), $('#script_desc').val());
+		$('#save_current_script').html('Saved!');
 	},
 	'click .remove_script_metric' : function(event) {
 		var metric = event.target;

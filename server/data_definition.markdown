@@ -32,7 +32,7 @@ description: String,
 user_id: Meteor.userId,
 creator: Meteor.userId,
 create_time: time_stamp,
-build_commands : array of build_command objects
+build_commands : array of build_command objects,
 sql_output : Concatenated SQL from build_command objects	
 }
 

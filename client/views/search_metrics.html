@@ -25,17 +25,14 @@
 	</div>	
 	<div id="search_bar">
 		<div class="input-append">
-			<input type="text" id="metric_querybox" class="input-medium" placeholder="field:condition">
+			<input type="text" id="metric_querybox" class="input-large" placeholder="field:condition">
 			<button id="query_metrics" class="btn btn-inverse">Search</button>
 		 	<button class="btn btn-inverse">Advanced</button>
 		</div>
 	</div>
 	<div id="results">
-		<table class="table">
 		{{#isolate}}	
 		{{#each search_results}}
-		<tr>
-			<td>
 			<div class="card">
 				<div class="span6">
 				<table class="table table-bordered">
@@ -91,8 +88,6 @@
 				<button id="{{_id}}" name="{{metric_name}}" class="btn btn-inverse add_explorer_metric">Add to Script</button>
 			</div>			
 			</div>
-			</td>
-		</tr>	
 		{{/each}}
 		{{/isolate}}
 	</div>

@@ -1,5 +1,65 @@
 <template name="my_scripts">
 	<div>
-		<h3 class="page-header">Saved Scripts:</h3>
+		<h4 class="page-header">Saved Scripts:</h3>
 	</div>
-</template>		
+	<div class="span3">
+		<div class="input-append">
+			<input id="script_query" type="text" class="input-large" placeholder="script_name">
+			<button id="script_search" class="btn btn-inverse">Search</button>
+		</div>
+		<div>
+			<table class="table table-condensed table-bordered">
+				{{#each my_scripts}}
+					<tr id="{{_id}}" name="{{script_name}}" class="script_results">
+						<td>{{script_name}}</td>
+					</tr>
+				{{/each}}
+			</table>
+		</div>
+	</div>
+	<div class="span6">
+		{{#isolate}}
+		{{#each script_selected}}
+		<table class="table table-bordered">			
+			<tr class="info">
+				<td>Script Name: {{script_name}} <button class="btn btn-inverse pull-right" name="{{_id}}">Share</button></td>
+			</tr>
+			<tr>
+				<td>Creator: {{creator}}</td>
+			</tr>
+			<tr>
+				<td>Description:
+					{{description}}</td>
+			</tr>
+		</table>
+		<div class="btn-group pull-right" data-toggle="buttons-radio">
+			<button type="button" class="btn btn-inverse" selected>SQL Output</button>
+			<button type="button" class="btn btn-inverse">Commands</button>
+		</div>
+		<div id="output-container">
+<pre>
+{{sql_output}}
+</pre>			
+		</div>
+		{{/each}}
+		{{/isolate}}
+	</div>				
+</template>
+
+<template name="script_blocks">
+	<table>
+		{{#each script.commands}}
+		<tr>
+			<td>{{commands}}</td>
+		</tr>
+		{{/each}}
+	</table>		
+</template>	
+
+<template name="script_sql">
+<pre>
+{{sql_output}}
+</pre>	
+</template>	
+
+		
