@@ -737,6 +737,7 @@ build_script = function(blocks, name, desc) {
 		creator: Meteor.userId(),
 		create_time: get_timestamp(),
 		build_commands : commands,
+		commands_input : stringify(commands, "\n"),
 		sql_output : sql_output
 	};
 	console.log(obj);
