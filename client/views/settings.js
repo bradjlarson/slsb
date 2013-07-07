@@ -4,6 +4,10 @@ Template.settings.events = {
 		var selected = event.target;
 		var text = $(selected).attr('name');
 		Session.set('settings_selected', text);
+	},
+	'change #syntax-type' : function(event) {
+		Session.set("syntax-type", event.target.value);
+		console.log(event.target.value);
 	}
 }
 

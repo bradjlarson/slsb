@@ -76,7 +76,8 @@ Meteor.startup(function() {
 	Session.setDefault("current_metric_m", false);
 	Session.setDefault("metric_searched_m", false);
 	Session.setDefault("history_search_query", false);
-	Session.setDefault("export_flag", true);	
+	Session.setDefault("export_flag", true);
+	Session.setDefault("syntax-type", "teradata");	
 });
 /////////////////////////////////////////////////////	
 //Subscriptions

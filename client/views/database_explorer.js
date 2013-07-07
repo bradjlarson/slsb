@@ -60,12 +60,12 @@ Template.explorer.events = {
 		var this_column = columns.find({_id : col_id}).fetch()[0];
 		var this_table = tables.find({table_name : this_column.table_name}).fetch()[0];
 		var proxy = {
-			cols_added : pkg_merge(this_table.join_cols, existy(this_table.indices) ? this_table.indices : [], this_column.column_name),
-			extra_sql : existy(this_table.extra_sql) ? this_table.extra_sql : "",
-			indices : existy(this_table.indices) ? this_table.indices : this_table.join_cols,
-			join_cols : this_table.join_cols,
+			metric_name : $(selected).attr('name').split('.')[0],
+			cols_added : this_column.column_name,    //pkg_merge(this_table.join_cols, existy(this_table.indices) ? this_table.indices : [], this_column.column_name),
 			join_src : this_column.database_name +'.'+this_column.table_name,
-			metric_name : $(selected).attr('name').split('.')[0]
+			join_cols : this_table.join_cols,
+			extra_sql : existy(this_table.extra_sql) ? this_table.extra_sql : "",
+			indices : existy(this_table.indices) ? this_table.indices : this_table.join_cols
 		};
 		Session.set("db_metric_proxy", proxy);
 		$('#db_exp_add').modal('show');
@@ -97,7 +97,10 @@ Template.explorer.events = {
 	},
 	'click #db_raw_predict' : function(event) {
 		$('#db-command-input').val(generate_command("raw", [generate_sql("", "", predict("create", Session.get("db_metric_proxy")))]));
-	},		
+	},
+	'click #db_create_metric_predict' : function(event) {
+		$('#db-command-input').val(predict("create_metric", Session.get("db_metric_proxy")));
+	}		
 }
 
 //Database Explorer

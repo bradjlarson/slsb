@@ -101,10 +101,12 @@ first_rest = function(first, rest, data, type) {
 		},
 		special : function() {
 			var args = process_special(data);
-			var one = first + _.first(args) + "\n";
+			var one = checker(_.first(args).slice(0,8), ["GROUP BY", "ORDER BY"]) ? _.first(args) + "\n" : first + _.first(args) + "\n";
 			var others = _.map(_.rest(args), function(clause) {
-				return (checker(clause.slice(0,8), ["GROUP BY", "ORDER BY"])) ? clause + "\n" : rest + clause + "\n";
-			});	
+				return checker(clause.slice(0,8), ["GROUP BY", "ORDER BY"]) ? clause + "\n" : rest + clause + "\n";
+			});
+			console.log(one);
+			console.log(others);	
 			return _.union(one, others);
 		},
 		no_process : function() {
@@ -128,6 +130,10 @@ first_rest = function(first, rest, data, type) {
 extract = function(type, data) {
 	var types = {command_name : "({", commands : "});", args : "},{", sub_args : ":", sub_arg_name : "/", options : "/", options_name: "+", options_args : "/"};
 	return parser(type, types[type], data);
+}
+
+rm_whitespace = function(text) {
+	return text.replace(/\}\)\; +/g, "});").replace(/: +/g, ":").replace(/ +:/g, ":").replace(/[\r\n]/g, "");
 }
 
 pkg_merge = function() {
@@ -219,7 +225,7 @@ transform = function(type, args, to) {
 			return "ORDER BY " + tostring(interpose(",", args));
 		},
 		m : function() {
-			return "MULTISET "+_.reduce(_.rest(args), function(memo, next) { return memo+transforms[next];},"");
+			return "MULTISET "+ _.reduce(_.rest(args), function(memo, next) { return memo+_.result(transforms, next);},"");
 		}, 
 		v : function() {
 			return "VOLATILE "+_.reduce(_.rest(args), function(memo, next) { return memo+transforms[next];},"");;
@@ -291,22 +297,22 @@ transform = function(type, args, to) {
 			return "UNION ALL \n" + selecting(stringify(_.rest(args), ":")) + from(to); 
 		},
 		ne : function() {
-			return " <> ";
+			return to+" <> ";
 		},
 		e : function() {
-			return " = ";
+			return to+" = ";
 		},
 		gt : function() {
-			return " > ";
+			return to+" > ";
 		},
 		lt : function() {
-			return " < ";
+			return to+" < ";
 		},
 		gte : function() {
-			return " >= ";
+			return to+" >= ";
 		},
 		lte : function() {
-			return " <= ";
+			return to+" <= ";
 		}
 	};
 	return _.result(transforms, type);
@@ -362,20 +368,19 @@ fetch = function(what, where) {
 	};
 	return places[where];
 }
-
+/*
 insert_into = function(what, where) {
 	var places = {
 		metric_library : metric_library.insert(what),
 		build_commands : build_commands.insert(what),
 		scripts : scripts.insert(what)
 	};
-	console.log(what);
-	console.log(where);
 	return _.result(places[where]);
 }
+*/
 
 table_name = function(name, type) {
-	var options = extract("option_args", name);
+	var options = extract("options_args", name);
 	var beginning = {m : "MULTISET", v: "VOLATILE"};
 	var ending = {v : "ON COMMIT PRESERVE ROWS"};
 	var extra_sql = truthy(options) ? _.reduce(options, function(memo, opt) { return memo + beginning[opt] + " ";},"") : "";
@@ -415,20 +420,24 @@ from = function(where) {
 conditions = function(how) {
 	//need to update this to 
 	var clauses = extract("sub_args", how);
-	return tostring(first_rest("WHERE ", "AND ", clauses, "special"));
+	return is_empty(_.without(clauses, "")) ? "" : tostring(first_rest("WHERE ", "AND ", _.without(clauses, ""), "special"));
 }
 
 specify = function(things) {
 	var indices = extract("sub_args", things);
-	return ") WITH DATA PRIMARY INDEX("+tostring(interpose(",", indices))+")\n";
+	return Session.equals("syntax-type", "teradata") ? ") WITH DATA PRIMARY INDEX("+tostring(interpose(",", indices))+")\n" : ")";
 }
 
 join_on = function(primary, secondary) {
 	var a = extract("sub_args", primary);
 	var b = extract("sub_args", secondary);
+	console.log(a);
+	console.log(b);
 	a = add_option("/e", a);
-	a = process(a, "sub_args");
-	b = process(b, "sub_args");
+	a = prefix("a.", process(a, "sub_args"));
+	b = prefix("b.", process(b, "sub_args"));
+	console.log(a);
+	console.log(b);
 	return tostring(first_rest("ON ", "AND ", cat_array(a, b), "normal"));
 }		
 
@@ -480,17 +489,20 @@ predict = function(type, metric, add_to) {
 	console.log(add_to);
 	var predictions = {
 		create : function() {
-			var args = load_me(metric.metric_name, pkg_merge(metric.cols_added, metric.join_cols, metric.indices), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql)
+			var args = load_me(metric.metric_name, pkg_merge(metric.join_cols, metric.indices, metric.cols_added), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql);
 			return generate_command("create", args);
 		},
 		add_metric : function() {
-			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins"), pkg_merge("your:indices", metric.indices)) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols), pkg_merge(add_to.indices, metric.indices));
+			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins", pkg_merge("your:indices", metric.indices))) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols, pkg_merge(add_to.indices, metric.indices));
 		},
 		select : function() {
 			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols)), metric.join_src, metric.extra_sql);
 		},
 		raw : function() {
 			return generate_command("raw", [generate_sql("create", metric.metric_name)]);
+		},
+		create_metric : function() {
+			return generate_command("create_metric", load_me(metric.metric_name, metric.cols_added, metric.join_src, metric.join_cols, metric.extra_sql, metric.indices, "", "Collection Name", "Metric Description"));
 		}
 	};
 	return _.result(predictions, type);
@@ -514,12 +526,16 @@ generate_command = function(type, args) {
 		}),
 		"raw" : splat(function(sql_preview) {
 			return bookend("raw({", sql_preview, "});");
+		}),
+		create_metric : splat(function(metric_name, cols_added, join_src, join_cols, extra_sql, indices, prep_sql, collection, description) {
+			return bookend("create_metric({",stringify(arguments, "},{"), "});");
 		})
 	};
 	return commands[type](args);
 }
 
 run = function(command, args) {
+	console.log(command);
 	var results = {};
 	var commands = {
 		create : splat(function(name, what, where, how, indices, prep_sql) {
@@ -560,7 +576,7 @@ run = function(command, args) {
 			//requirements("create_metric", arguments);
 			var args = [default_to(metric_name, "metric_name"),default_to(cols_added, "your:columns"),default_to(join_src, "your.table"),default_to(join_cols, "your:joins"),default_to(extra_sql, ""),default_to(indices, "your:indices"),default_to(prep_sql, ""),default_to(collection, ""),default_to(description, "")];
 			console.log(args);
-			insert_into(proxy_metric(args, "array"), "metric_library");
+			metric_library.insert(proxy_metric(args, "array"));
 			results.output_text = "Metric: " + default_to(metric_name, "metric_name") + " added to the library";
 			results.command = "Create Metric Command...";
 			results.metric_name = "";
@@ -666,14 +682,14 @@ submit_command = function(command) {
 		output = merge(output, results);
 		output = check(output);
 		console.log(output);
-		insert_into(output, "build_commands");
+		build_commands.insert(output);
 		return true;
 	}
 }
 
 process_block = function(block) {
 	//requirements("process_block", arguments);
-	var commands = extract("commands", block);
+	var commands = extract("commands", rm_whitespace(block));
 	console.log(commands);
 	_.each(commands, submit_command);
 };
@@ -683,12 +699,14 @@ recompile = function(block_id, command_block) {
 	var command = "";
 	var output = false;
 	command = command_block;
-	Session.set("current_command", command_block);
+	console.log(command);
 	if(command != "")
 	{
+		Session.set("current_command", command_block);
 		var command_name = extract("command_name", command_block);
 		var args = extract("args", command_block); 
 		output = run(command_name, args);
+		console.log(Session.get("current_command"));
 	}
 	if (output)
 	{
@@ -696,7 +714,7 @@ recompile = function(block_id, command_block) {
 		build_commands.update(block_id, {$set : {output_text : output['ouput_text']}});
 		build_commands.update(block_id, {$set : {sql_output : output['sql_output']}});
 		build_commands.update(block_id, {$set : {metric_name : output['metric_name']}});
-		build_commands.update(block_id, {$set : {command_block : output['command_block']}});
+		build_commands.update(block_id, {$set : {command_block : Session.get("current_command")}});
 		build_commands.update(block_id, {$set : {join_cols : output['join_cols']}});
 		build_commands.update(block_id, {$set : {indices : output['indices']}});
 	}
@@ -726,7 +744,6 @@ pre_run_check = function(command) {
 };
 
 build_script = function(blocks, name, desc) {
-	console.log(blocks);
 	var commands = _.pluck(blocks, 'command_block');
 	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
 	console.log(commands);
@@ -741,6 +758,6 @@ build_script = function(blocks, name, desc) {
 		sql_output : sql_output
 	};
 	console.log(obj);
-	insert_into(obj, 'scripts');
+	scripts.insert(obj);
 	return obj;
 }

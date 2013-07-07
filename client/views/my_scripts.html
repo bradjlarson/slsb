@@ -22,7 +22,7 @@
 		{{#each script_selected}}
 		<table class="table table-bordered">			
 			<tr class="info">
-				<td>Script Name: {{script_name}} <button class="btn btn-inverse pull-right" name="{{_id}}">Share</button></td>
+				<td>Script Name: {{script_name}} <button class="btn btn-danger pull-right delete-script" name="{{_id}}">Delete</button><button class="btn btn-inverse pull-right" name="{{_id}}">Share</button></td>
 			</tr>
 			<tr>
 				<td>Creator: {{creator}}</td>
@@ -32,13 +32,15 @@
 					{{description}}</td>
 			</tr>
 		</table>
-		<div class="btn-group pull-right" data-toggle="buttons-radio">
-			<button type="button" class="btn btn-inverse" selected>SQL Output</button>
-			<button type="button" class="btn btn-inverse">Commands</button>
+		<div class="btn-group pull-right clearfix" data-toggle="buttons-radio">
+			<button id="show_sql" type="button" class="btn btn-inverse" selected>SQL Output</button>
+			<button id="show_blocks" type="button" class="btn btn-inverse">Commands</button>
 		</div>
 		<div id="output-container">
-<pre>
-{{commands_input}}
+<pre id="script-output">
+
+	
+{{sql_output}}
 </pre>			
 		</div>
 		{{/each}}
@@ -47,17 +49,17 @@
 </template>
 
 <template name="script_blocks">
-	<table>
-		{{#each script.commands}}
-		<tr>
-			<td>{{commands}}</td>
-		</tr>
-		{{/each}}
-	</table>		
+<pre>
+
+
+{{commands_input}}
+</pre>
 </template>	
 
 <template name="script_sql">
 <pre>
+
+
 {{sql_output}}
 </pre>	
 </template>	

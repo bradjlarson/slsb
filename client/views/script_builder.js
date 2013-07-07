@@ -29,7 +29,7 @@ Template.command_history.past_command = function() {
 	}
 	else
 	{
-		return build_commands.find({user_id : Meteor.userId()}, {sort : {command_time : 1}, limit : 10});
+		return build_commands.find({user_id : Meteor.userId()}, {sort : {command_time : -1}, limit : 10});
 	}
 	
 }
@@ -122,7 +122,7 @@ Template.script_builder.events = {
 		var command_id = $(event.target).attr("name");
 		var new_val = $(event.target).val();
 		//console.log(command_id);
-		//console.log(new_val);
+		console.log(new_val);
 		//build_commands.update(command_id, {$set : {command_block : new_val}});
 		recompile(command_id, new_val);
 	},
