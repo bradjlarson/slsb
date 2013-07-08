@@ -62,9 +62,7 @@ from_obj = function(obj) {
 
 load_me = function() {
 	var up = []; 
-	_.each(arguments, function(x) {
-		up.push(x);
-	});
+	_.each(arguments, function(x) { up.push(x); });
 	return up;
 }
 
@@ -138,7 +136,6 @@ rm_whitespace = function(text) {
 
 pkg_merge = function() {
 	var next = [];
-	console.log('starting pkg merge');
 	_.each(arguments, function(arg) {  
 		is_empty(arg) ? console.log('skipped') : _.each(extract("sub_args", arg), function(x) { next.push(x); }); 
 	});
@@ -418,7 +415,6 @@ from = function(where) {
 }
 
 conditions = function(how) {
-	//need to update this to 
 	var clauses = extract("sub_args", how);
 	return is_empty(_.without(clauses, "")) ? "" : tostring(first_rest("WHERE ", "AND ", _.without(clauses, ""), "special"));
 }
@@ -431,13 +427,9 @@ specify = function(things) {
 join_on = function(primary, secondary) {
 	var a = extract("sub_args", primary);
 	var b = extract("sub_args", secondary);
-	console.log(a);
-	console.log(b);
 	a = add_option("/e", a);
 	a = prefix("a.", process(a, "sub_args"));
 	b = prefix("b.", process(b, "sub_args"));
-	console.log(a);
-	console.log(b);
 	return tostring(first_rest("ON ", "AND ", cat_array(a, b), "normal"));
 }		
 
@@ -485,18 +477,16 @@ generate_sql = function(type, metric_name, command) {
 }
 
 predict = function(type, metric, add_to) {
-	console.log(metric);
-	console.log(add_to);
 	var predictions = {
 		create : function() {
 			var args = load_me(metric.metric_name, pkg_merge(metric.join_cols, metric.indices, metric.cols_added), metric.join_src, metric.extra_sql, metric.indices, metric.prep_sql);
 			return generate_command("create", args);
 		},
 		add_metric : function() {
-			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins", pkg_merge("your:indices", metric.indices))) : generate_command("add_metric", load_me(metric.metric_name, add_to.metric_name, add_to.join_cols, pkg_merge(add_to.indices, metric.indices));
+			return is_empty(add_to) ? generate_command("add_metric", load_me(metric.metric_name, "your_table", "your:joins", pkg_merge("your:indices", metric.indices))) : generate_command("add_metric", load_me(metric.metric_name, add_to.table_name, add_to.join_cols, pkg_merge(add_to.indices, metric.indices)));
 		},
 		select : function() {
-			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols)), metric.join_src, metric.extra_sql);
+			return generate_command("select", load_me(pkg_merge(metric.cols_added, metric.join_cols), metric.join_src, metric.extra_sql));
 		},
 		raw : function() {
 			return generate_command("raw", [generate_sql("create", metric.metric_name)]);
@@ -535,7 +525,6 @@ generate_command = function(type, args) {
 }
 
 run = function(command, args) {
-	console.log(command);
 	var results = {};
 	var commands = {
 		create : splat(function(name, what, where, how, indices, prep_sql) {
@@ -575,7 +564,6 @@ run = function(command, args) {
 		create_metric : splat(function(metric_name, cols_added, join_src, join_cols, extra_sql, indices, prep_sql, collection, description) {
 			//requirements("create_metric", arguments);
 			var args = [default_to(metric_name, "metric_name"),default_to(cols_added, "your:columns"),default_to(join_src, "your.table"),default_to(join_cols, "your:joins"),default_to(extra_sql, ""),default_to(indices, "your:indices"),default_to(prep_sql, ""),default_to(collection, ""),default_to(description, "")];
-			console.log(args);
 			metric_library.insert(proxy_metric(args, "array"));
 			results.output_text = "Metric: " + default_to(metric_name, "metric_name") + " added to the library";
 			results.command = "Create Metric Command...";
@@ -647,8 +635,6 @@ run = function(command, args) {
 					return next;
 				}, _.first(metric_records));
 			}
-			console.log(anchor);
-			console.log(stringify(anchor));
 			process_block(stringify(anchor));
 			results.command = "Chain command...";
 			results.output_text = "Build commands for those metrics added to script";
@@ -681,7 +667,6 @@ submit_command = function(command) {
 		var results = run(command_name, args);
 		output = merge(output, results);
 		output = check(output);
-		console.log(output);
 		build_commands.insert(output);
 		return true;
 	}
@@ -690,7 +675,6 @@ submit_command = function(command) {
 process_block = function(block) {
 	//requirements("process_block", arguments);
 	var commands = extract("commands", rm_whitespace(block));
-	console.log(commands);
 	_.each(commands, submit_command);
 };
 
@@ -699,14 +683,12 @@ recompile = function(block_id, command_block) {
 	var command = "";
 	var output = false;
 	command = command_block;
-	console.log(command);
 	if(command != "")
 	{
 		Session.set("current_command", command_block);
 		var command_name = extract("command_name", command_block);
 		var args = extract("args", command_block); 
 		output = run(command_name, args);
-		console.log(Session.get("current_command"));
 	}
 	if (output)
 	{
@@ -746,7 +728,6 @@ pre_run_check = function(command) {
 build_script = function(blocks, name, desc) {
 	var commands = _.pluck(blocks, 'command_block');
 	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
-	console.log(commands);
 	var obj = {
 		script_name: name,
 		description: desc,
@@ -757,7 +738,6 @@ build_script = function(blocks, name, desc) {
 		commands_input : stringify(commands, "\n"),
 		sql_output : sql_output
 	};
-	console.log(obj);
 	scripts.insert(obj);
 	return obj;
 }
