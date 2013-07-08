@@ -246,7 +246,7 @@ transform = function(type, args, to) {
 			return "MAX("+to+")";
 		},
 		left : function() {
-			return "LEFT("+args[0]+","+args[1]+")";
+			return "LEFT("+to+","+args[1]+")";
 		},
 		d : function() {
 			return "DISTINCT "+to;
