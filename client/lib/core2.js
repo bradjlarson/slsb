@@ -18,6 +18,11 @@ splat = function(fun) { return function(array) { return fun.apply(null, array); 
 
 default_to = function(x, y) { return truthy(x) ? x : y; };
 
+text_swap = function(text, find, replace) {
+	var replace_regex = new RegExp(find, 'g');
+	return text.replace(replace_regex, replace);
+};
+
 cat = function() { 
 	var head = _.first(arguments); 
 	if (existy(head)) 
@@ -310,6 +315,9 @@ transform = function(type, args, to) {
 		},
 		lte : function() {
 			return to+" <= ";
+		},
+		as : function() {
+			return to+" as "+args[1];
 		}
 	};
 	return _.result(transforms, type);
@@ -431,6 +439,10 @@ join_on = function(primary, secondary) {
 	a = prefix("a.", process(a, "sub_args"));
 	b = prefix("b.", process(b, "sub_args"));
 	return tostring(first_rest("ON ", "AND ", cat_array(a, b), "normal"));
+}
+
+prep_sql = function(sql, table, joins) {
+	return text_swap(sql, "<user_table>", table);
 }		
 
 check_joins = function(where) {
@@ -530,7 +542,7 @@ run = function(command, args) {
 		create : splat(function(name, what, where, how, indices, prep_sql) {
 			//requirements("create", arguments);
 			var metric = fetch(extract("sub_arg_name", name), "metric_library");
-			var prep = truthy(metric) ? _.has(metric, "prep_sql") ? metric.prep_sql + "\n" : "" : ""
+			var prep = truthy(metric) ? _.has(metric, "prep_sql") ? prep_sql(metric.prep_sql, "/*THIS CLAUSE NEEDS TO BE MODIFIED BY YOU*/") + "\n" : "" : ""
 			var first = table_name(name, "get");
 			results.sql_output = prep + first.begin + selecting(what) + from(where) + conditions(how) + specify(indices) + first.end +";";
 			results.output_text = "SQL to create table: "+name+" generated.";
@@ -545,7 +557,7 @@ run = function(command, args) {
 			//requirements("add_metric", arguments);
 			var metric = fetch(extract("sub_arg_name", name), "metric_library");
 			var adding_to = fetch(extract("sub_arg_name", where), "build_commands");
-			var prep = _.has(metric, "prep_sql") ? metric.prep_sql+"\n" : "";
+			var prep = _.has(metric, "prep_sql") ? prep_sql(metric.prep_sql, adding_to)+"\n" : "";
 			var first = table_name(name, "add");
 			var second = selecting("*", metric.cols_added);
 			var third = from(contains(where, "/") ? extract("sub_arg_name", where) + ":" + metric.join_src +"/"+ extract("options", where) : where+":"+ metric.join_src+"/lj");
@@ -558,8 +570,8 @@ run = function(command, args) {
 			results.table_name = "add_"+extract("sub_arg_name", name);
 			results.metric_name = extract("sub_arg_name", name);
 			results.indices = indices ? indices : adding_to.indices;
-			results.join_cols = adding_to.join_cols; //inherits join columns from source table
-			results.columns = _.union(adding_to.columns, metric.cols_added);
+			results.join_cols = default_to(adding_to.join_cols, joins); //inherits join columns from source table, otherwise uses specifed joins
+			results.columns = pkg_merge(default_to(adding_to.columns, ""), metric.cols_added);
 		}),
 		create_metric : splat(function(metric_name, cols_added, join_src, join_cols, extra_sql, indices, prep_sql, collection, description) {
 			//requirements("create_metric", arguments);
