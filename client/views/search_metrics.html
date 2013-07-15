@@ -22,12 +22,43 @@
 			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
 			<button id="1.2" class="btn btn-success search-submit" data-dismiss="modal" aria-hidden="true">Submit</button>
 		</div>
+	</div>
+	<div id="advanced_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="search-adv-header" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+			<h3 id="search-adv-header">Advanced Search:</h3>
+		</div>
+		<div class="modal-body">
+			<div id="search-adv-body">
+				<form>
+					<legend>Fill out any combination of inputs:</legend>
+					<label>metric_name contains:</label>
+					<input name="metric_name" class="input input-large adv-search-regex" placeholder="metric_name">
+					<label>cols_added contains:</label>
+					<input name="cols_added" class="input input-large adv-search-regex" placeholder="cols_added">
+					<label>join_src contains:</label>
+					<input name="join_src" class="input input-large adv-search-regex" placeholder="join_src">
+					<label>join_cols contains:</label>
+					<input name="join_cols" class="input input-large adv-search-regex" placeholder="join_cols">
+					<label>extra_sql contains:</label>
+					<input name="extra_sql" class="input input-large adv-search-regex" placeholder="extra_sql">
+					<label>indices contains:</label>
+					<input name="" class="input input-large adv-search-regex" placeholder="indices">
+					<label>description contains:</label>
+					<input id="adv_metric_name" class="input input-large adv-search-regex" placeholder="key words">
+				</form>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+			<button class="btn btn-success adv-search-submit" data-dismiss="modal" aria-hidden="true">Submit</button>
+		</div>
 	</div>	
 	<div id="search_bar">
 		<div class="input-append">
 			<input type="text" id="metric_querybox" class="input-large" placeholder="metric_name">
 			<button id="query_metrics" class="btn btn-inverse">Search</button>
-		 	<button class="btn btn-inverse">Advanced</button>
+		 	<button id="launch_adv_search" class="btn btn-inverse">Advanced</button>
 		</div>
 	</div>
 	<div id="results">

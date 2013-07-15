@@ -50,8 +50,6 @@ Meteor.publish("scripts", function() {
 });
 
 
-
-
 }
 	
 if (Meteor.isClient) {		
@@ -59,12 +57,12 @@ if (Meteor.isClient) {
 //Startup Code: Setting Session Variables,
 
 Meteor.startup(function() {
-	Session.setDefault("metric_name", "metric_name");
-	Session.setDefault("cols_added", "{cols:added}");
-	Session.setDefault("join_src", "join.src");
-	Session.setDefault("join_cols", "{join:cols}");
-	Session.setDefault("extra_sql", "--Like where, group by, qualify");
-	Session.setDefault("indices", "{primary:indices}");
+	Session.setDefault("metric_name", false);
+	Session.setDefault("cols_added", false);
+	Session.setDefault("join_src", false);
+	Session.setDefault("join_cols", false);
+	Session.setDefault("extra_sql", false);
+	Session.setDefault("indices", false);
 	Session.setDefault("prep_sql", false);
 	Session.setDefault("db_searched", false);
 	Session.setDefault("table_searched", false);
@@ -72,12 +70,14 @@ Meteor.startup(function() {
 	Session.setDefault("table_selected", false);
 	Session.setDefault("settings_selected", "Preferences");		
 	Session.setDefault("search_condition", null);
-	Session.setDefault("search_field", null);
 	Session.setDefault("current_metric_m", false);
 	Session.setDefault("metric_searched_m", false);
 	Session.setDefault("history_search_query", false);
 	Session.setDefault("export_flag", true);
-	Session.setDefault("syntax-type", "teradata");	
+	Session.setDefault("syntax-type", "teradata");
+	Session.setDefault("advanced_search", false);
+	Session.setDefault("mod_saved", true);
+	Session.setDefault("preview_type", "create");		
 });
 /////////////////////////////////////////////////////	
 //Subscriptions
@@ -113,8 +113,8 @@ Template.side_bar.events = {
 		$('#main').html(Meteor.render(Template.create));},
 	'click #launch_search' : function(event) {
 		$('#main').html(Meteor.render(Template.search));
-		Session.set("search_condition", null);
-		Session.set("search_field", null);},
+		//Session.set("search_condition", null);
+		Session.set("advanced_search", false)},
 	'click #launch_build' : function(event) {
 		$('#main').html(Meteor.render(Template.script_builder));
 		Session.set("current_command", false);
@@ -123,8 +123,7 @@ Template.side_bar.events = {
 		$('#main').html(Meteor.render(Template.explorer));
 		Session.set('db_searched', false);
 		Session.set('table_searched', false);
-		Session.set('db_selected', false);
-		Session.set('table_selected', false);},
+		},
 	'click #launch_modify' : function(event) {
 		$('#main').html(Meteor.render(Template.modify));
 		Session.set('metric_searched_m', false);},

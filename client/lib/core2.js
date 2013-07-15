@@ -18,6 +18,15 @@ splat = function(fun) { return function(array) { return fun.apply(null, array); 
 
 default_to = function(x, y) { return truthy(x) ? x : y; };
 
+Object.toType = (function toType(global) {
+  return function(obj) {
+    if (obj === global) {
+      return "global";
+    }
+    return ({}).toString.call(obj).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
+  }
+})(this)
+
 text_swap = function(text, find, replace) {
 	var replace_regex = new RegExp(find, 'g');
 	return text.replace(replace_regex, replace);
@@ -369,7 +378,9 @@ start_obj = function(output) {
 fetch = function(what, where) {
 	var places = {
 		metric_library : _.first(metric_library.find({metric_name : what}).fetch()),
-		build_commands : _.first(build_commands.find({active : true, table_name : {$ne : ""}}, {sort : {command_time : -1}}).fetch())
+		build_commands : _.first(build_commands.find({active : true, table_name : {$ne : ""}}, {sort : {command_time : -1}}).fetch()),
+		build_first : _.first(build_commands.find({active : true, table_name : {$ne : ""}}, {sort : {command_time : -1}}).fetch()),
+		build_specific : _.first(build_commands.find({active : true, table_name : what}, {sort : {command_time : -1}}).fetch())
 	};
 	return places[where];
 }
@@ -555,9 +566,18 @@ run = function(command, args) {
 		}),
 		add_metric : splat(function(name, where, joins, indices) {
 			//requirements("add_metric", arguments);
-			var metric = fetch(extract("sub_arg_name", name), "metric_library");
-			var adding_to = fetch(extract("sub_arg_name", where), "build_commands");
-			var prep = _.has(metric, "prep_sql") ? mod_prep_sql(metric.prep_sql, adding_to.table_name)+"\n" : "";
+			var metric;
+			if (Object.toType(name) === "object")
+			{
+				metric = name;
+				name = metric.metric_name;
+			}
+			else if (Object.toType(name) === "string")
+			{
+			 	metric = fetch(extract("sub_arg_name", name), "metric_library");
+			}
+			var adding_to = default_to(fetch(extract("sub_arg_name", where), "build_specific"), default_add_to());
+			var prep = _.has(metric, "prep_sql") ? mod_prep_sql(metric.prep_sql, extract("sub_arg_name", where))+"\n" : "";
 			var first = table_name(name, "add");
 			var second = selecting("*", metric.cols_added);
 			var third = from(contains(where, "/") ? extract("sub_arg_name", where) + ":" + metric.join_src +"/"+ extract("options", where) : where+":"+ metric.join_src+"/lj");
@@ -569,7 +589,7 @@ run = function(command, args) {
 			results.output_text = "SQL to add "+extract("sub_arg_name", name)+" to "+extract("sub_arg_name", where)+" generated.";
 			results.table_name = "add_"+extract("sub_arg_name", name);
 			results.metric_name = extract("sub_arg_name", name);
-			results.indices = indices ? indices : adding_to.indices;
+			results.indices = indices ? indices : adding_to.indices ? adding_to.indices : metric.indices;
 			results.join_cols = default_to(adding_to.join_cols, joins); //inherits join columns from source table, otherwise uses specifed joins
 			//results.columns = pkg_merge(default_to(adding_to.columns, ""), metric.cols_added);
 		}),

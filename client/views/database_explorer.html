@@ -67,8 +67,10 @@
 		<div class="table_info">
 				{{#each selected_table}}
 				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
-				<p class="db_editable" name="{{_id}}"><textarea class="table-editable span12" name="{{_id}}">{{table_desc}}</textarea></p>
-				<p class="db_editable" name="{{_id}}">Recommended join columns: {{join_cols}}</p>
+				<p class="db_editable" name="{{_id}}"><textarea class="table-editable span12" name="table_desc.{{_id}}">{{table_desc}}</textarea></p>
+				<p class="db_editable" name="{{_id}}">Recommended join columns: <input class="input-large table-editable" name="join_cols.{{_id}}" value ="{{join_cols}}"></p>
+				<p class="db_editable" name="{{_id}}">Recommended where clauses: <input class="input-large table-editable" name="extra_sql.{{_id}}" value ="{{extra_sql}}"></p>
+				<p class="db_editable" name="{{_id}}">Indices: <input class="input-large table-editable" name="indices.{{_id}}" value ="{{indices}}"></p>
 				{{/each}}
 		</div>
 		<div class="table_info">			

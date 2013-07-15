@@ -1,22 +1,27 @@
+Template.search.rendered = function() {
+	var m_names = _.pluck(metric_library.find().fetch(), "metric_name");
+	$('#metric_querybox').typeahead({source : m_names});
+	if(Session.get("search_condition"))
+	{
+		$('#metric_querybox').val(Session.get("search_condition"));
+	}
+}
+
 //Search Events
 Template.search.events = {
 	'click #query_metrics' : function(event) {
 		var selected = event.target;
 		var query = $('#metric_querybox').val();
-		var args = query.split(":");
-		var field = args[0];
-		var condition = args[1];
-		if (args.length == 2)
-		{
-		Session.set("search_condition", condition);
-		Session.set("search_field", field);
-		}
-		else
-		{
-		Session.set("search_field", "metric_name");
-		Session.set("search_condition", field);
-		}
+		Session.set("advanced_search", false);
+		Session.set("search_condition", query);
 		return false;
+	},
+	'click #launch_adv_search' : function(event) {
+		$('#advanced_search_modal').modal('show');
+	},
+	'click .adv-search-submit' : function(event) {
+		console.log('advanced search');
+		Session.set("advanced_search", true);
 	},
 	'click .add_explorer_metric' : function(event) {
 		var selected = event.target;
@@ -57,35 +62,36 @@ Template.search.events = {
 
 //Search
 Template.search.search_results = function() {
-	var search_field = Session.get("search_field");
-	var search_query = Session.get("search_condition");
-	console.log(search_field+":"+search_query);
-	var mongo_query = '.*'+search_query+'.*';
-	console.log(mongo_query);
-	var mongo_field = {};
-	mongo_field[search_field] = {$regex : mongo_query, $options : 'i'};
-	console.log(mongo_field);
-	if (search_field) 
+	if (Session.get("advanced_search"))
 	{
-		//: {$regex : mongo_query, $options : 'i'}}
-		return metric_library.find({ metric_name : {$regex : mongo_query, $options : 'i'}}, {sort : {metric_name : 1}});
+		var args = [];
+		$('.adv-search-regex').each(function() {
+			var reg = truthy($(this).val().length > 0) ? '.*'+$(this).val()+'*.' : '.';
+			args.push(reg);
+		});
+		return splat(adv_search)(args);
 	}
 	else
 	{
-		return metric_library.find({}, {sort : {metric_name : 1}});
+		var search_field = Session.get("search_field");
+		var search_query = Session.get("search_condition");
+		var mongo_query = truthy(search_query) ? '.*'+search_query+'.*' : '.';
+		return metric_library.find({ metric_name : {$regex : mongo_query, $options : 'i'}}, {sort : {metric_name : 1}});
 	}
-	
 };
-$('#metric_querybox').submit(function() {
-	console.log('search submitted');
-	return false;
-});
-$('#metric_search_form').submit(function() {
-	console.log('search submitted');
-	return false;
-});
 
-
+adv_search = function(metric_name, cols_added, join_src, join_cols, extra_sql, indices, description) {
+	var search_conditions = {
+		metric_name : {$regex : metric_name, $options : 'i'},
+		cols_added : {$regex : cols_added, $options : 'i'},
+		join_src : {$regex : join_src, $options : 'i'},
+		join_cols : {$regex : join_cols, $options : 'i'},
+		extra_sql : {$regex : extra_sql, $options : 'i'},
+		indices : {$regex : indices, $options : 'i'},
+		description : {$regex : description, $options : 'i'}
+	};
+	return metric_library.find(search_conditions, {sort : {metric_name : 1}}).fetch();	
+}
 
 
 

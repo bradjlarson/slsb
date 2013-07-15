@@ -1,27 +1,40 @@
 //Create
 Template.create.helpers({
-	prep_sql: function() {return prep_sql(Session.get("prep_sql"));},
-	metric_name: function() {return Session.get("metric_name");},
-	cols_added: function() {return cols_added(Session.get("cols_added"));},
-	join_src: function() {return Session.get("join_src");},	
-	join_cols: function() {return join_cols(Session.get("join_cols"));},	
-	extra_sql: function() {return Session.get("extra_sql");},	
-	indices: function() {return indices(Session.get("indices"));},	
-	});
+	sql_preview : function() { return add_metric_preview();}
+	
+	/*
+	prep_sql: function() {return mod_prep_sql(default_to(Session.get("prep_sql"), "--prep sql"));},
+	metric_name: function() {return table_name(default_to(Session.get("metric_name"), "metric_name"));},
+	cols_added: function() {return selecting(default_to(Session.get("cols_added"),"your:cols"));},
+	join_src: function() {return from(default_to(Session.get("join_src"), "your.table"));},	
+	join_cols: function() {return join_on(stringify(prefix("user_", extract("sub_args", default_to(Session.get("join_cols"),"your:joins"))), ":"), default_to(Session.get("join_cols"),"your:joins"));},	
+	extra_sql: function() {return conditions(default_to(Session.get("extra_sql"),"this=that"));},	
+	indices: function() {return specify(default_to(Session.get("indices"), "your:indices"));},
+	*/	
+});
+
+add_metric_preview = function() {
+	return run("add_metric", [get_args(), "some.table", "user_join:user_join", get_args().indices]).sql_output;
+}
+
+get_args = function() {
+	var obj = {
+		metric_name : default_to(Session.get("metric_name"), "metric_name"),
+		cols_added : default_to(Session.get("cols_added"),"your:columns"),
+		join_src : default_to(Session.get("join_src"), "your.table"),
+		join_cols : default_to(Session.get("join_cols"),"your:joins"),
+		extra_sql : default_to(Session.get("extra_sql"),"this=that"),
+		indices : default_to(Session.get("indices"), "your:indices"),
+		prep_sql : default_to(Session.get("prep_sql"), "--prep sql")
+	};
+	return obj;
+}
+
+
 
 //Create Metric Events:
 Template.create.events = {
 	'change .create_input' : function(event) {
-		/*
-		var current_id = create_metric.find().fetch();
-		var doc_selector = current_id[0]['_id'];
-		var input = event.currentTarget;
-		var doc_name = $(input).attr('id');
-		var update_val = $(input).val();
-		create_metric.update({_id: doc_selector}, { $set: {doc_name: update_val}}, function(error) {
-			console.log("error");
-		});	
-		*/
 		var input = event.currentTarget;
 		var input_id = $(input).attr('id');
 		var input_val = $(input).val();
@@ -63,6 +76,7 @@ Template.create.events = {
 		}); 
 	} 
 };
+/*
 
 function cols_added(cols) {
 	var separate_cols = cols.split(':');
@@ -131,3 +145,4 @@ function prep_sql(text) {
 	}
 	return display_text;
 }
+*/

@@ -12,29 +12,6 @@
 		<div class="span4" id="create_form">
 			<form id="create_metric_form" class="form-horizontal">
 				<div class="control-group">
-					<label class="control-label" for="quick_add">Quick Add:</label>
-					<div class="controls">
-						<a id="launch_quick_add" href="#quick_add" role="button" class="btn btn-inverse" data-toggle="modal">Quick Add</a>
-						<div id="quick_add" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="prep_label" aria-hidden="true">
-						  <div class="modal-header">
-						    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						    <h3 id="prep_label">Quick Add:</h3>
-						  </div>
-						  <div class="modal-body">
-							<div class="input-prepend input-append">
-								<span class="add-on">create_metric(</span>
-								<textarea id="quick_add_prompt" rows="8" cols="200" class="span3" placeholder="metric_name,{cols:added},join.src,{join:cols},extra_sql,{indices}"></textarea>
-								<span class="add-on">)<span>
-							</div>					
-						  </div>
-						  <div class="modal-footer">
-						    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-						    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Preview</button>
-						  </div>
-						</div>
-					</div>
-				</div>
-				<div class="control-group">
 					<label class="control-label" for="metric_name">Metric Name:</label>
 					<div class="controls">
 						<input class="create_input" type="text" id="metric_name" placeholder="metric_name">
@@ -43,31 +20,31 @@
 				<div class="control-group">
 					<label class="control-label" for="cols_added">Columns added:</label>
 					<div class="controls">
-						<input class="create_input" type="text" id="cols_added" placeholder="{cols:added}">
+						<input class="create_input" type="text" id="cols_added" placeholder="your:columns">
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="join_src">Join Source:</label>
 					<div class="controls">
-						<input class="create_input" type="text" id="join_src" placeholder="join.src">
+						<input class="create_input" type="text" id="join_src" placeholder="your.table">
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="join_cols">Join Columns:</label>
 					<div class="controls">
-						<input class="create_input" type="text" id="join_cols" placeholder="{join:cols}">
+						<input class="create_input" type="text" id="join_cols" placeholder="your:joins">
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="extra_sql">Additional SQL:</label>
 					<div class="controls">
-						<textarea rows="3" class="create_input" id="extra_sql" placeholder="Like where, group by, qualify"></textarea>
+						<textarea rows="3" class="create_input" id="extra_sql" placeholder="this=that"></textarea>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="indices">Primary Index:</label>
 					<div class="controls">
-						<input class="create_input" type="text" id="indices" placeholder="{primary:indices}">
+						<input class="create_input" type="text" id="indices" placeholder="your:indices">
 					</div>
 				</div>
 				<div class="control-group">
@@ -81,7 +58,7 @@
 						    <h3 id="prep_label">Add Prep SQL:</h3>
 						  </div>
 						  <div class="modal-body">
-							<textarea id="prep_sql" class="span12 create_input" cols="200" rows="8" placeholder="Paste your SQL here..."></textarea>
+							<textarea id="prep_sql" class="span12 create_input" cols="200" rows="8" placeholder="--prep sql"></textarea>
 						  </div>
 						  <div class="modal-footer">
 						    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -94,14 +71,7 @@
 		</div>
 		<div class="span6 pull-right" id="create_preview">
 <pre class="pre-scrollable">
-{{prep_sql}}	
-CREATE TABLE add_{{metric_name}} as (
-SELECT a.*{{cols_added}} 
-FROM &lt;user_table&gt; a
-LEFT JOIN {{join_src}} b
-{{join_cols}}
-{{extra_sql}}
-)WITH DATA PRIMARY INDEX({{indices}});
+{{sql_preview}}
 </pre>
 			<div>
 				<p class="text-center"><a href="#metric_submit" role="button" class="btn btn-inverse" data-toggle="modal">Submit Metric</a>

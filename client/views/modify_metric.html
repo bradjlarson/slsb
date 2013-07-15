@@ -3,6 +3,7 @@
 		<div class="input-append">
 			<input id="modify_query" type="text" class="input-medium" placeholder="metric_name">
 			<button id="modify_search" class="btn btn-inverse">Search</button>
+			<button id="modify_search" class="btn btn-inverse">Add Metric</button>
 		</div>
 		<div>
 			<table class="table table-condensed table-bordered">
@@ -15,70 +16,7 @@
 		</div>
 	</div>
 	<div class="span6">
-		{{#isolate}}
-		{{#each metric_selected}}
-			<table class="table table-bordered">
-				<tr class="info">
-					<td><b>Metric Name:</b></td>
-					<td><input class="modify_text" name="metric_name" type="text" value="{{metric_name}}"></td>
-				</tr>
-				<tr>
-					<td><b>Columns Added:</b></td>
-					<td><input class="modify_text" name="cols_added" type="text" value="{{cols_added}}"></td>
-				</tr>
-				<tr>
-					<td><b>Join Source:</b></td>
-					<td><input class="modify_text" name="join_src" type="text" value="{{join_src}}"></td>
-				</tr>
-				<tr>
-					<td><b>Available Join Columns:</b></td>
-					<td><input class="modify_text" name="join_cols" type="text" value="{{join_cols}}"></td>
-				</tr>
-				<tr>
-					<td><b>Extra SQL:</b></td>
-					<td><input class="modify_text" name="extra_sql" type="text" value="{{extra_sql}}"></td>
-				</tr>
-				<tr>
-					<td><b>Indices:</b></td>
-					<td><input class="modify_text" name="indices" type="text" value="{{indices}}"></td>
-				</tr>
-				<tr>
-					<td><b>Preparatory SQL:</b></td>
-					<td><textarea class="modify_text" row="3" name="prep_sql" type="text" value="{{prep_sql}}">{{prep_sql}}</textarea></td>
-				</tr>
-				<tr>
-					<td><b>Preview:</b></td>
-					<td><b>{{preview}}</b></td>
-				</tr>
-			</table>
-			<table class="table table-bordered">
-				<tr>
-					<td><b>Collection:</b></td>
-					<td><input class="modify_text" name="collection" type="text" value="{{collection}}"></td>
-				</tr>
-				<tr>
-					<td><b>Description:</b></td>
-					<td><textarea class="modify_text" rows="3" name="description" type="text" value="{{description}}">{{description}}</textarea></td>
-				</tr>
-				<tr>
-			</table>
-			<table class="table table-bordered">
-				<tr>
-					<td><b>Creator:</b></td>
-					<td><input class="modify_text uneditable-input" name="creator" type="text" value="{{creator}}" readonly></td>
-				</tr>
-				<tr>
-					<td><b>Created at:</b></td>
-					<td><input class="modify_text uneditable-input" name="create_time" type="text" value="{{create_time}}" readonly></td>
-				</tr>
-				<tr>
-					<td><b>Times Used:</b></td>
-					<td><input class="modify_text uneditable-input" name="used" type="text" value="{{used}}" readonly></td>
-				</tr>
-			</table>
-							
-		{{/each}}
-		{{/isolate}}
+		{{> selected_metric}}
 	</div>
 	{{#isolate}}
 	{{#each metric_selected}}
@@ -89,4 +27,77 @@
 	{{/each}}
 	{{/isolate}}
 </template>			
-					
+
+<template name="selected_metric">
+{{#isolate}}
+	{{#each metric_selected}}
+	<table class="table table-bordered">
+		<tr class="info">
+			<td><b>Metric Name:</b></td>
+			<td><input class="modify_text" name="metric_name" type="text" value="{{metric_name}}"></td>
+		</tr>
+		<tr>
+			<td><b>Columns Added:</b></td>
+			<td><input class="modify_text" name="cols_added" type="text" value="{{cols_added}}"></td>
+		</tr>
+		<tr>
+			<td><b>Join Source:</b></td>
+			<td><input class="modify_text" name="join_src" type="text" value="{{join_src}}"></td>
+		</tr>
+		<tr>
+			<td><b>Available Join Columns:</b></td>
+			<td><input class="modify_text" name="join_cols" type="text" value="{{join_cols}}"></td>
+		</tr>
+		<tr>
+			<td><b>Extra SQL:</b></td>
+			<td><input class="modify_text" name="extra_sql" type="text" value="{{extra_sql}}"></td>
+		</tr>
+		<tr>
+			<td><b>Indices:</b></td>
+			<td><input class="modify_text" name="indices" type="text" value="{{indices}}"></td>
+		</tr>
+		<tr>
+			<td><b>Preparatory SQL:</b></td>
+			<td><textarea class="modify_text" row="3" name="prep_sql" type="text" value="{{prep_sql}}">{{prep_sql}}</textarea></td>
+		</tr>
+		<tr>
+			<td><b>Preview:</b></td>			
+			<td>
+<pre id="modify-preview">
+</pre>
+			<div class="btn-group"><button id="modify_create_predict" name="" class="btn btn-inverse text-center search-add">create</btn>
+				<button id="modify_add_metric_predict" name="" class="btn btn-inverse text-center search-add">add_metric</btn>
+				<button id="modify_select_predict" name="" class="btn btn-inverse text-center search-add">select</btn>
+				<button id="modify_raw_predict" name="" class="btn btn-inverse text-center search-add">raw</btn>
+			</div>	
+			</td>
+		</tr>
+	</table>
+	<table class="table table-bordered">
+		<tr>
+			<td><b>Collection:</b></td>
+			<td><input class="modify_text" name="collection" type="text" value="{{collection}}"></td>
+		</tr>
+		<tr>
+			<td><b>Description:</b></td>
+			<td><textarea class="modify_text" rows="3" name="description" type="text" value="{{description}}">{{description}}</textarea></td>
+		</tr>
+		<tr>
+	</table>
+	<table class="table table-bordered">
+		<tr>
+			<td><b>Creator:</b></td>
+			<td><input class="modify_text uneditable-input" name="creator" type="text" value="{{creator}}" readonly></td>
+		</tr>
+		<tr>
+			<td><b>Created at:</b></td>
+			<td><input class="modify_text uneditable-input" name="create_time" type="text" value="{{create_time}}" readonly></td>
+		</tr>
+		<tr>
+			<td><b>Times Used:</b></td>
+			<td><input class="modify_text uneditable-input" name="used" type="text" value="{{used}}" readonly></td>
+		</tr>
+	</table>
+	{{/each}}		
+{{/isolate}}
+</template>					
