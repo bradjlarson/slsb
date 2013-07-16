@@ -13,7 +13,9 @@ Template.script_sql.sql_output = function() {
 Template.script_blocks.commands_input = function() {
 	return _.first(scripts.find({_id : Session.get("selected_script")}).fetch()).commands_input;
 }
-
+Template.my_scripts.rendered = function() {
+	truthy(Session.get("selected_script")) ? $('#'+Session.get("selected_script")).addClass("info") : console.log('no script selected');
+}
 
 Template.my_scripts.events = {
 	'click #script_search' : function(event) {
@@ -28,6 +30,9 @@ Template.my_scripts.events = {
 	},
 	'click .script_results' : function(event) {
 		var selected = event.currentTarget;
+		$('.script_results').each(function(item) {
+			$(item).removeClass("info");
+		});
 		$(selected).addClass("info");
 		var text = $(selected).attr('id');
 		console.log(text);

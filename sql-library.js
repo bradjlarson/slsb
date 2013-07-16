@@ -10,6 +10,9 @@ docs = new Meteor.Collection("docs");
 help_docs = new Meteor.Collection("help");
 export_docs = new Meteor.Collection("export_docs");
 scripts = new Meteor.Collection("scripts");
+organizations = new Meteor.Collection("organizations");
+groups = new Meteor.Collection("groups");
+admins = new Meteor.Collection("admins");
 
 if (Meteor.isServer) {
 	
@@ -49,6 +52,9 @@ Meteor.publish("scripts", function() {
 	return scripts.find({user_id : this.userId});
 });
 
+Meteor.publish("organizations", function() {
+	return organizations.find();
+});
 
 }
 	
@@ -94,7 +100,7 @@ Meteor.subscribe("help_docs");
 Meteor.subscribe("export_docs");
 Meteor.subscribe("settings");
 Meteor.subscribe("scripts");
-
+Meteor.subscribe("organizations");
 
 /////////////////////////////////////////////////////
 //Misc.

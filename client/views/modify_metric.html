@@ -1,9 +1,8 @@
 <template name="modify">
 	<div class="span3">
 		<div class="input-append">
-			<input id="modify_query" type="text" class="input-medium" placeholder="metric_name">
+			<input id="modify_query" type="text" class="input-large" placeholder="metric_name">
 			<button id="modify_search" class="btn btn-inverse">Search</button>
-			<button id="modify_search" class="btn btn-inverse">Add Metric</button>
 		</div>
 		<div>
 			<table class="table table-condensed table-bordered">
@@ -16,16 +15,22 @@
 		</div>
 	</div>
 	<div class="span6">
+		{{#isolate}}
+		{{#each metric_selected}}
+		<div class="well">
+		<h4>Metric: {{metric_name}}
+			<div class="btn-group pull-right">
+				<button id="modify_save" class=" btn btn-inverse">Save</button>
+				<button id="modify_save" class=" btn btn-inverse">Add Variant</button>
+				<button id="delete_metric" class=" btn btn-danger">Delete</button>
+			</div>
+		</h4>
+		</div>	
+		{{/each}}
+		{{/isolate}}
 		{{> selected_metric}}
 	</div>
-	{{#isolate}}
-	{{#each metric_selected}}
-		<div class="span1">
-			<button id="modify_save" class="btn btn-inverse pull-right">Save</button>
-			<button id="delete_metric" class="btn btn-danger pull-right">Delete</button>
-		</div>
-	{{/each}}
-	{{/isolate}}
+	
 </template>			
 
 <template name="selected_metric">

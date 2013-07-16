@@ -14,6 +14,10 @@ Template.script_builder.command = function() {
 	return build_commands.find({user_id: Meteor.userId()}, {sort: {command_time: -1}, limit: 10});
 }
 */
+Template.script_builder.existing_scripts = function() {
+	return scripts.find();
+}
+
 Template.script_builder.current_script = function() {
 	return build_commands.find({user_id : Meteor.userId(), active : true}, {sort : {command_time: 1}});
 }
@@ -106,10 +110,25 @@ Template.script_builder.events = {
 		$(event.target).html("Saved!");
 		*/
 	},
+	'change #script_name_old' : function(event) {
+		Session.set("update_script_id", $(event.target).val());
+	},
+	'change #script_name' : function(event) {
+		Session.set("update_script_id", false);
+	},
 	'click #save_script' : function(event) {
-		var blocks = build_commands.find({active : true}).fetch();
-		build_script(blocks, $('#script_name').val(), $('#script_desc').val());
-		$('#save_current_script').html('Saved!');
+		if(Session.get("update_script_id"))
+		{
+			var blocks = build_commands.find({active : true}, {sort : {command_time : 1}}).fetch();
+			update_script(Session.get("update_script_id"), blocks, ($('#script_desc').val().length > 0) ? $('#script_desc').val() : false);
+			$('#save_current_script').html('Saved!');
+		}
+		else
+		{
+			var blocks = build_commands.find({active : true}, {sort : {command_time : 1}}).fetch();
+			build_script(blocks, $('#script_name').val(), $('#script_desc').val());
+			$('#save_current_script').html('Saved!');
+		}
 	},
 	'click .remove_script_metric' : function(event) {
 		var metric = event.target;

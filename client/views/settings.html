@@ -1,4 +1,27 @@
 <template name="settings">
+	<div id="join_org_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="join_org" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="join_org">Select an organization to join</h3>
+	  </div>
+	  <div class="modal-body" id="join_org_modal_body">
+		<form>	
+		<label>Organization Name:</label>	
+		<select id="select_org">
+			<option value="none">None</option>
+			{{#each orgs}}
+				<option value="{{organization_name}}">{{organization_name}}</option>
+			{{/each}}
+		</select>
+		</form>
+		<div class="form-actions">
+		<button class="btn btn-inverse" id="submit_org_request">Submit Access Request</button>		
+		</div>
+	  </div>
+	  <div class="modal-footer">
+	    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+	  </div>
+	</div>
 	<div class="span4 offset1">
 	{{#isolate}}
 	<form>
@@ -20,7 +43,7 @@
 	</form>
 	{{/isolate}}
 	<div class="btn-group pull-left">
-		<button class="btn btn-inverse" id="join_group">Join an organization</button>
-	</div>
+		<button class="btn btn-inverse" id="launch_join_org">Join an organization</button>
+	</div>	
 	</div>
 </template>

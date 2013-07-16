@@ -773,3 +773,16 @@ build_script = function(blocks, name, desc) {
 	scripts.insert(obj);
 	return obj;
 }
+
+update_script = function(block_id, blocks, desc) {
+	var commands = _.pluck(blocks, 'command_block');
+	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
+	var obj = {
+		build_commands : commands,
+		commands_input : stringify(commands, "\n"),
+		sql_output : sql_output
+	};
+	truthy(desc) ? obj['description'] = desc : console.log('no desc.');		
+	scripts.update(block_id, {$set : obj});
+	return obj;
+}

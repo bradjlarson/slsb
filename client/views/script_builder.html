@@ -7,7 +7,17 @@
 		 <div class="modal-body">
 			<div class="submit_field">
 				<p>
+				<form>	
+				<label>Add a new script:</label>	
 				<input type="text" id="script_name" class="input-large" placeholder="Script name...">
+				<label>Or update a previous one:</label>
+				<select id="script_name_old">
+						<option></option>
+					{{#each existing_scripts}}
+						<option value="{{_id}}">{{script_name}}</option>
+					{{/each}}	
+				</select>
+				</form>	
 				</p>
 			</div>
 			<div class="submit_field">

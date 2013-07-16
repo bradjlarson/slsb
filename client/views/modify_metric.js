@@ -15,7 +15,7 @@ default_metric = function() {
 default_add_to = function() {
 	return {
 		table_name : "some.table",
-		join_cols : "these:joins"
+		join_cols : "these:joins",
 	};
 }
 
@@ -32,7 +32,6 @@ get_metric_vals = function(selector) {
 Template.selected_metric.events = {
 	'change .modify_text' : function(event) {
 		Session.set("modify_changes", true);
-		$('#modify_save').removeClass('btn-success').addClass('btn-inverse');
 	},
 	'click #modify_create_predict' : function(event) {
 		var command = predict("create", proxy_metric(get_metric_vals('.modify_text'), "array"));
@@ -73,7 +72,7 @@ Template.modify.events = {
 	},
 	'change .modify_text' : function(event) {
 		Session.set("mod_saved", false);
-		$('#modify_save').removeClass('btn-success').addClass('btn-inverse').html('Save...');
+		$('#modify_save').html('Save...');
 	},
 	'click #modify_save' : function(event) {
 		modified_metric = {};
@@ -83,7 +82,7 @@ Template.modify.events = {
 		console.log(modified_metric);
 		metric_library.update(Session.get("current_metric_m"), modified_metric);
 		Session.set("mod_saved", true);
-		$(event.target).html("Saved!").removeClass('btn-inverse').addClass('btn-success');
+		$(event.target).html("Saved!");
 	},
 	'click #delete_metric' : function(event) {
 		metric_library.remove(Session.get("current_metric_m"));
@@ -96,7 +95,7 @@ Template.modify.rendered = function() {
 	{
 		$('#'+Session.get('current_metric_m')).addClass('info');
 	}
-	if(Session.get('mod_saved')) { $('#modify_save').html("Saved!").removeClass('btn-inverse').addClass('btn-success'); }
+	if(Session.get('mod_saved')) { $('#modify_save').html("Saved!"); }
 }
 
 //Modify Metric
