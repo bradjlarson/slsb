@@ -29,12 +29,13 @@
 		<div class="input-append explorer_search pull-left">
 		  <input id="db_search" type="text" placeholder="database_name" class="input-large">
 		  <button id="db_query" class="btn btn-inverse" type="button">Search</button>
+		  <button id="db_add" class="btn btn-inverse" type="button">Add</button>		
 		</div>
 		<div class="pull-left">
 			<table class="table table-condensed table-hover table-bordered">
 			{{#each databases}}
 				<tr class="db_results" name="{{database_name}}">
-					<td>{{database_name}}</td>
+					<td>{{database_name}}<i name="databases.{{_id}}" class="db-explore-remove icon-minus pull-right "></td>
 				</tr>
 			{{/each}}	
 			</table>
@@ -45,6 +46,7 @@
 		<div class="input-append explorer_search pull-left">
 		  <input id="table_search" type="text" placeholder="table_name" class="input-large">
 		  <button id="table_query" class="btn btn-inverse" type="button">Search</button>
+		  <button id="table_add" class="btn btn-inverse" type="button">Add</button>
 		</div>
 		<div class="pull-left">
 			{{#isolate}}
@@ -52,7 +54,7 @@
 			<table class="table table-condensed table-hover table-bordered">	
 				{{#each tables}}
 				<tr class="table_results" name="{{table_name}}">
-					<td>{{table_name}}</td>
+					<td>{{table_name}}<i name="tables.{{_id}}" class="db-explore-remove icon-minus pull-right "></td>
 				</tr>
 				{{/each}}
 			</table>
@@ -60,17 +62,27 @@
 			{{/isolate}}
 		</div>
 	</div>
-
 	<div class="span5">
 		{{#isolate}}
 		{{#if table_selected}}		
 		<div class="table_info">
 				{{#each selected_table}}
 				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
-				<p class="db_editable" name="{{_id}}"><textarea class="table-editable span12" name="table_desc.{{_id}}">{{table_desc}}</textarea></p>
-				<p class="db_editable" name="{{_id}}">Recommended join columns: <input class="input-large table-editable" name="join_cols.{{_id}}" value ="{{join_cols}}"></p>
-				<p class="db_editable" name="{{_id}}">Recommended where clauses: <input class="input-large table-editable" name="extra_sql.{{_id}}" value ="{{extra_sql}}"></p>
-				<p class="db_editable" name="{{_id}}">Indices: <input class="input-large table-editable" name="indices.{{_id}}" value ="{{indices}}"></p>
+				<form>
+					<textarea class="table-editable span12" name="table_desc.{{_id}}">{{table_desc}}</textarea>
+					<label>Default join columns: </label>
+					<input type="text" class="input-large table-editable" name="join_cols.{{_id}}" value ="{{join_cols}}">
+					<label>Default "where" clauses:</label>
+					<input type="text" class="input-large table-editable" name="extra_sql.{{_id}}" value ="{{extra_sql}}">
+					<label>Default indices: </label>
+					<input type="text" class="input-large table-editable" name="indices.{{_id}}" value ="{{indices}}">
+				</form>
+			<!--		
+				<p class="db_editable" name="{{_id}}"></p>
+				<p class="db_editable" name="{{_id}}">Recommended join columns: <input type="text" class="input-large table-editable" name="join_cols.{{_id}}" value ="{{join_cols}}"></p>
+				<p class="db_editable" name="{{_id}}">Recommended where clauses: <input type="text" class="input-large table-editable" name="extra_sql.{{_id}}" value ="{{extra_sql}}"></p>
+				<p class="db_editable" name="{{_id}}">Indices: <input type="text" class="input-large table-editable" name="indices.{{_id}}" value ="{{indices}}"></p>
+			-->	
 				{{/each}}
 		</div>
 		<div class="table_info">			
@@ -83,11 +95,18 @@
 					<td>{{column_name}} <i name="{{column_name}}.{{_id}}" class="db-explore-add icon-plus pull-right "></td>
 					<td class="db_editable" name="{{_id}}">
 						<!-- <input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"> -->
-						{{column_desc}}
+						{{column_desc}}<i name="columns.{{_id}}" class="db-explore-remove icon-minus pull-right ">
 					</td>
 				</tr>
 			{{/each}}
+				<tr class="add_db_columns">
+					<td><input class="input span12" type="text" id="add_col_name" placeholder="column_name"></td>
+					<td><input class="input span12" type="text" id="add_col_desc" placeholder="column notes">
+						<button class="btn btn-inverse pull-right" id="add_new_column">Add</button></td>
+				</tr>
+				
 			</table>
+			
 		</div>
 		{{/if}}
 		{{/isolate}}

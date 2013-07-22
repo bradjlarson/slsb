@@ -13,6 +13,12 @@ Template.create.helpers({
 	*/	
 });
 
+Template.create.rendered = function() {
+	$('.create_input').each(function(index) {
+		truthy(Session.get($(this).attr("id"))) ? $(this).val(Session.get($(this).attr("id"))) : $(this).val("");
+	});
+}
+
 add_metric_preview = function() {
 	return run("add_metric", [get_args(), "some.table", "user_join:user_join", get_args().indices]).sql_output;
 }
@@ -28,6 +34,16 @@ get_args = function() {
 		prep_sql : default_to(Session.get("prep_sql"), "--prep sql")
 	};
 	return obj;
+}
+
+reset_create_form = function() {
+	Session.set("metric_name", false);
+	Session.get("cols_added",false);
+	Session.get("join_src", false);
+	Session.get("join_cols",false);
+	Session.get("extra_sql",false);
+	Session.get("indices", false);
+	Session.get("prep_sql", false);
 }
 
 
@@ -74,75 +90,10 @@ Template.create.events = {
 				console.log(err);
 			}
 		}); 
+	},
+	'click #reset_create' : function() {
+		reset_create_form();
+		return false;
 	} 
 };
-/*
 
-function cols_added(cols) {
-	var separate_cols = cols.split(':');
-	var col_string = '';
-	for (col in separate_cols)
-	{
-		col_string += ', b.'+separate_cols[col].replace('{','').replace('}','');
-	}
-	return col_string;
-}
-
-function join_cols(cols) {
-	var separate_cols = cols.split(':');
-	var col_string = '';
-	if (separate_cols)
-	{
-		var i = 1;
-		for (col in separate_cols)
-		{
-			if (i == 1) 
-			{
-				col_string += 'ON a.<user_col'+i+'> = b.'+separate_cols[col].replace('{','').replace('}','');
-				if (i != separate_cols.length)
-				{
-					col_string += '\n'
-				}
-			}
-			else
-			{
-				col_string += 'AND a.<user_col'+i+'> = b.'+separate_cols[col].replace('{','').replace('}','');
-				if (i != separate_cols.length)
-				{
-					col_string += '\n'
-				}
-			}	
-			i++;	
-		}
-		return col_string;
-	}
-}
-
-function indices(cols) {
-	var separate_cols = cols.split(':');
-	var col_string = '';
-	var i = 1;
-	for (col in separate_cols)
-	{
-		if (i != separate_cols.length)
-		{
-			col_string += separate_cols[col].replace('{','').replace('}','')+',';
-		}
-		else
-		{
-			col_string += separate_cols[col].replace('{','').replace('}','');
-		}
-		i++;	
-	}
-	return col_string;
-}
-
-function prep_sql(text) {
-	var display_text = "--SQL Preview for "+Session.get("metric_name")+":";
-	if (text) 
-	{
-		display_text +='\n'+text;
-	}
-	return display_text;
-}
-*/

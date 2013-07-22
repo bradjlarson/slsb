@@ -21,7 +21,7 @@
 		<h4>Metric: {{metric_name}}
 			<div class="btn-group pull-right">
 				<button id="modify_save" class=" btn btn-inverse">Save</button>
-				<button id="modify_save" class=" btn btn-inverse">Add Variant</button>
+				<button id="clone_metric" class="btn btn-inverse">Clone</button>
 				<button id="delete_metric" class=" btn btn-danger">Delete</button>
 			</div>
 		</h4>
@@ -78,14 +78,22 @@
 			</td>
 		</tr>
 	</table>
+	<div id="change_owner_alert">
+	</div>	
 	<table class="table table-bordered">
 		<tr>
-			<td><b>Collection:</b></td>
-			<td><input class="modify_text" name="collection" type="text" value="{{collection}}"></td>
+			<td id="change_owner_verify"><b>Library:</b></td>
+			<td><select class="span8" id="metric_owner_change">
+				{{#each libraries}}
+				<option value="{{lib_name}}">{{this}}</option>
+				{{/each}}
+				</select>
+				<!-- <input class="modify_text" name="collection" type="text" value="{{collection}}"> -->
+				</td>
 		</tr>
 		<tr>
 			<td><b>Description:</b></td>
-			<td><textarea class="modify_text" rows="3" name="description" type="text" value="{{description}}">{{description}}</textarea></td>
+			<td><textarea class="modify_text span12" rows="3" name="description" type="text" value="{{description}}">{{description}}</textarea></td>
 		</tr>
 		<tr>
 	</table>
@@ -105,4 +113,13 @@
 	</table>
 	{{/each}}		
 {{/isolate}}
-</template>					
+</template>		
+<template name="change_owner">
+	<div class="alert alert-error alert-block fade in">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		<h4>Warning!</h4>
+		<p>This will permanently change ownership. Please click Accept to continue.<p>
+		<p><a class="btn btn-danger" id="change_ownership" href="#change_owner">Accept</a>
+			<a class="btn btn-inverse" id="keep_ownership" data-dismiss="alert" href="#change_owner">Reject</a></p>	
+	</div>
+</template>				

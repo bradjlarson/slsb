@@ -42,6 +42,33 @@ Template.explorer.events = {
 		Session.set("db_selected", false);
 		console.log(query_val);
 	},
+	'click #db_add' : function(event) {
+		var query_val = $('#db_search').val();
+		databases.insert({database_name : query_val});
+		$('#db_search').val("").focus();
+	},
+	'click #table_add' : function(event) {
+		var query_val = $('#table_search').val();
+		tables.insert({database_name : Session.get("db_selected"), table_name : query_val});
+		$('#table_search').focus();
+	},
+	'click #add_new_column' : function () {
+		var col_name = $('#add_col_name').val();
+		var col_desc = $('#add_col_desc').val();
+		columns.insert({database_name : Session.get("db_selected"), table_name : Session.get("table_selected"), column_name : col_name, column_desc : col_desc});
+		$('#add_col_desc').val("");
+		$('#add_col_name').val("").focus();
+	},
+	'click .db-explore-remove' : function(event) {
+		var instructs = $(event.target).attr("name").split('.');
+		var types = {
+			databases : function() { return databases.remove(instructs[1]);},
+			tables : function() { return tables.remove(instructs[1]);},
+			columns : function() { return columns.remove(instructs[1]);}
+		};
+		_.result(types, instructs[0]);
+		
+	},
 	/*'change #table_search' : function(event) {
 		var query_val = $('#table_search').val();
 		Session.set("table_searched", query_val);

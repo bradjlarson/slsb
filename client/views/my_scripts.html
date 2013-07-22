@@ -1,6 +1,35 @@
 <template name="my_scripts">
+	<div id="share_script_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="share_script" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="share_script">Share your script:</h3>
+	  </div>
+	  <div class="modal-body" id="share_script_modal_body">
+		<form id="share_script_form">
+			<legend>Search for a user to share with:</legend>
+			<input id="group_users" type="text" class="input-xlarge" placeholder="search user name here...">
+			<div class="form-actions">
+			<button class="btn btn-inverse" id="share_script_submit">Share</button>		
+			</div>
+		</form>
+	  </div>
+	  <div class="modal-footer">
+	    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+	  </div>
+	</div>
 	<div>
-		<h4 class="page-header">Saved Scripts:</h3>
+	<div id="load_script_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="load_script" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="load_script">Load Script:</h3>
+	  </div>
+	  <div class="modal-body" id="load_script_modal_body">
+		<p>Click "Load" to load this script into the Script Builder. This will clear the console, so make sure you have saved all work before loading this script.</p>
+	  </div>
+	  <div class="modal-footer">
+		<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+	    <button id="submit_load_script" class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Load</button>
+	  </div>
 	</div>
 	<div class="span3">
 		<div class="input-append">
@@ -22,7 +51,13 @@
 		{{#each script_selected}}
 		<table class="table table-bordered">			
 			<tr class="info">
-				<td>Script Name: {{script_name}} <button class="btn btn-danger pull-right delete-script" name="{{_id}}">Delete</button><button class="btn btn-inverse pull-right" name="{{_id}}">Share</button></td>
+				<td>Script Name: {{script_name}} 
+					<div class="btn-group pull-right">
+					<button class="btn btn-inverse load-script" name="{{_id}}">Load</button>
+					<button class="btn btn-inverse share-script" name="{{_id}}">Share</button>
+					<button class="btn btn-danger delete-script" name="{{_id}}">Delete</button>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<td>Creator: {{creator}}</td>
@@ -49,10 +84,11 @@
 </template>
 
 <template name="script_blocks">
+<button class="btn btn-inverse pull-right" id="update_script">Saved!</button>	
 <pre>
 
 
-{{commands_input}}
+{{#each build_commands}}<pre contenteditable="true" class="edit-commands">{{this}}</pre>{{/each}}
 </pre>
 </template>	
 

@@ -38,17 +38,10 @@
 		<div class="span7">
 			<h3	class="text-center page-header">Script Preview:
 				<div class="btn-group pull-right">
+				<button id="recompile_script" class="btn btn-inverse btn-small"><strong>Recompile</strong></button>
 				<button id="save_current_script" class="btn btn-inverse btn-small"><strong>Save</strong></button>	
 				<button id="clear_current_script" class="btn btn-inverse btn-small"><strong>Clear</strong></button>
-				<button id="recompile_script" class="btn btn-inverse btn-small"><strong>Recompile</strong></button>
-				<a id="script_metrics" class="btn btn-inverse btn-small dropdown-toggle" data-toggle="dropdown" href="#">Metrics<span class="caret"></span></a>
-					<ul class="dropdown-menu pull-right" role="menu">
-					{{#isolate}}	
-					{{#each current_script}}
-						<li><a tabindex="-1"><small><input name="{{_id}}" class="edit-command input-xxlarge" value="{{command_block}}"></small><button id="{{_id}}" class="close remove_script_metric">&times;</button></a></li>
-					{{/each}}
-					{{/isolate}}	
-					</ul>	
+				<button id="script_commands" class="btn btn-inverse btn-small"><strong>Commands<i class="icon-chevron-down icon-white"></i></strong></button>
 				</div>	
 			</h3>
 		</div>
@@ -56,12 +49,13 @@
 	<div class="row-fluid span10">
 		<div class="span5">
 			<div id="command_input">			
-{{#isolate}}	
+{{#isolate}}
 <pre class="pre-scrollable">
->Please enter a command below to get started
-{{#each current_script}}
->{{command_block}}
->>>{{output_text}}{{/each}}
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>Script Builder Console:
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>		
+{{#each current_script}}<pre contenteditable=true class="edit-command" id="{{_id}}">{{command_block}}</pre>>>{{output_text}}
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{{/each}}
 </pre>
 {{/isolate}}
 				{{#isolate}}
@@ -70,7 +64,7 @@
 				</div>
 				{{/isolate}}
 				<div>
-					<textarea rows="4" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
+					<textarea rows="8" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
 				</div>
 			</div>
 			<div class="btn-group pull-left" data-toggle="buttons-radio">
@@ -81,7 +75,7 @@
 		</div>
 		<div class="span7">
 {{#isolate}}			
-<pre>
+<pre contenteditable="true">
 {{#each current_script}}
 {{sql_output}}
 {{/each}}					
@@ -101,7 +95,12 @@
 	<table class="table table-bordered table-condensed">
 		{{#each past_command}}
 			<tr>
-				<td><span name="{{_id}}" class="edit_history clearfix span9">{{command_block}}</span><span class="span3 pull-right clearfix"><button name="{{_id}}" class="close remove_history">&times;</button><button id="{{_id}}" class="history_add btn btn-inverse btn-small pull-right">Add</button></span></td>
+				<td><span name="{{_id}}" class="edit_history clearfix span9">{{command_block}}</span>
+					<span>
+					<i name="{{_id}}" class="remove_history icon-remove pull-right"></i>
+					<i id="{{_id}}" class="history_add icon-plus pull-right"></i>
+					</span>
+				</td>
 			</tr>
 		{{/each}}
 	</table>
@@ -196,21 +195,22 @@
 </template>
 		
 <template name="command_line">
-{{#isolate}}	
+{{#isolate}}
 <pre class="pre-scrollable">
->Please enter a command below to get started
-{{#each current_script}}
->{{command_block}}
->>>{{output_text}}{{/each}}
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>Script Builder Console:
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>		
+{{#each current_script}}<pre contenteditable=true class="edit-command" id="{{_id}}">{{command_block}}</pre>>>{{output_text}}
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{{/each}}
 </pre>
 {{/isolate}}
-	{{#isolate}}
+{{#isolate}}
 	<div>
 		<p>{{pre_run}}</p>
 	</div>
-	{{/isolate}}
+{{/isolate}}
 	<div>
-		<textarea rows="4" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
+		<textarea rows="8" id="console_input" class="console_input span12" placeholder="//enter your commands here...(remember to end commmands with ';');"></textarea>
 	</div>
 </template>
 

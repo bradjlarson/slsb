@@ -18,6 +18,11 @@ splat = function(fun) { return function(array) { return fun.apply(null, array); 
 
 default_to = function(x, y) { return truthy(x) ? x : y; };
 
+get_timestamp = function() {
+	var today = new Date;
+	return today.today() + " @ " + today.timeNow();
+};
+
 Object.toType = (function toType(global) {
   return function(obj) {
     if (obj === global) {
@@ -30,6 +35,14 @@ Object.toType = (function toType(global) {
 text_swap = function(text, find, replace) {
 	var replace_regex = new RegExp(find, 'g');
 	return text.replace(replace_regex, replace);
+};
+
+expand = function(command) {
+	return text_swap(command, "},{", "},\n{");
+};
+
+compress = function(command) {
+	return text_swap(command, "},\n{", "},{");
 };
 
 cat = function() { 
@@ -66,7 +79,7 @@ stringify = function(x, z) {
 }
 
 bookend = function(x,y,z) {
-	console.log(x+y+z);
+	z = default_to(z, x);
 	return x + y + z;
 }
 
@@ -140,12 +153,22 @@ first_rest = function(first, rest, data, type) {
 }
 
 extract = function(type, data) {
-	var types = {command_name : "({", commands : "});", args : "},{", sub_args : ":", sub_arg_name : "/", options : "/", options_name: "+", options_args : "/"};
+	var types = {
+		command_name : "({",
+		commands : "});", 
+		args : "},{", 
+		sub_args : ":", 
+		sub_arg_name : "/", 
+		options : "/", 
+		options_name: "+", 
+		options_args : "/",
+		group_member_name : " (",
+		group_member_id : "("};
 	return parser(type, types[type], data);
 }
 
 rm_whitespace = function(text) {
-	return text.replace(/\}\)\; +/g, "});").replace(/: +/g, ":").replace(/ +:/g, ":").replace(/[\r\n]/g, "");
+	return text.replace(/\}\)\; +/g, "});").replace(/: +/g, ":").replace(/ +:/g, ":").replace(/}\);[\r\n↵]+/g, "});").replace(/"},\n{"/g, "},{");
 }
 
 pkg_merge = function() {
@@ -357,6 +380,12 @@ parser = function(type, find, data) {
 		},
 		options_args : function() {
 			return truthy(keep(data, find)) ? keep(data, find).split("+") : false;
+		},
+		group_member_name : function() {
+			return strip(data, find);
+		},
+		group_member_id : function() {
+			return strip(keep(data, find), ")");
 		}
 	};
 	return _.result(operations, type);
@@ -370,7 +399,7 @@ start_obj = function(output) {
 		command_time : datetime,
 		success : false,
 		active : true,
-		command_block : Session.get("current_command")
+		command_block : text_swap(Session.get("current_command"), "},{", "},\n{")
 	};
 	return output;
 }
@@ -460,11 +489,6 @@ check_joins = function(where) {
 	return false;
 }
 
-get_timestamp = function() {
-	var today = new Date;
-	return today.today() + " @ " + today.timeNow();
-}
-
 proxy_metric = function(obj, type) {
 	type = default_to(type, "obj");
 	var metric = {
@@ -494,6 +518,7 @@ proxy_metric = function(obj, type) {
 
 generate_sql = function(type, metric_name, command) {
 	var command = existy(command) ? command : predict(type, fetch(metric_name, "metric_library"));
+	command = compress(command);
 	var command_name = extract("command_name", command);
 	var args = extract("args", command);
 	return run(command_name, args).sql_output;
@@ -518,7 +543,7 @@ predict = function(type, metric, add_to) {
 			return generate_command("create_metric", load_me(metric.metric_name, metric.cols_added, metric.join_src, metric.join_cols, metric.extra_sql, metric.indices, "", "Collection Name", "Metric Description"));
 		}
 	};
-	return _.result(predictions, type);
+	return expand(_.result(predictions, type));
 }
 
 
@@ -689,6 +714,7 @@ check = function(output) {
 
 submit_command = function(command) {
 	//requirements("submit_command", arguments);
+	command = compress(command);
 	if (contains(command, "({"))
 	{
 		Session.set("current_command", command);
@@ -707,19 +733,21 @@ submit_command = function(command) {
 process_block = function(block) {
 	//requirements("process_block", arguments);
 	var commands = extract("commands", rm_whitespace(block));
-	_.each(commands, submit_command);
+	console.log(commands);
+	_.each(commands, function(c) {submit_command(compress(c));});
 };
 
 recompile = function(block_id, command_block) {
 	//This will update the SQL output for all of the blocks currently in your stack. 
 	var command = "";
 	var output = false;
-	command = command_block;
+	command = compress(command_block);
+	console.log(command);
 	if(command != "")
 	{
-		Session.set("current_command", command_block);
-		var command_name = extract("command_name", command_block);
-		var args = extract("args", command_block); 
+		Session.set("current_command", command);
+		var command_name = extract("command_name", command);
+		var args = extract("args", command); 
 		output = run(command_name, args);
 	}
 	if (output)
@@ -728,7 +756,7 @@ recompile = function(block_id, command_block) {
 		build_commands.update(block_id, {$set : {output_text : output['ouput_text']}});
 		build_commands.update(block_id, {$set : {sql_output : output['sql_output']}});
 		build_commands.update(block_id, {$set : {metric_name : output['metric_name']}});
-		build_commands.update(block_id, {$set : {command_block : Session.get("current_command")}});
+		build_commands.update(block_id, {$set : {command_block : expand(command)}});
 		build_commands.update(block_id, {$set : {join_cols : output['join_cols']}});
 		build_commands.update(block_id, {$set : {indices : output['indices']}});
 	}
@@ -758,7 +786,7 @@ pre_run_check = function(command) {
 };
 
 build_script = function(blocks, name, desc) {
-	var commands = _.pluck(blocks, 'command_block');
+	var commands = _.map(_.pluck(blocks, 'command_block'), expand);
 	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
 	var obj = {
 		script_name: name,
@@ -776,6 +804,7 @@ build_script = function(blocks, name, desc) {
 
 update_script = function(block_id, blocks, desc) {
 	var commands = _.pluck(blocks, 'command_block');
+	_.map(commands, expand);
 	var sql_output = stringify(_.pluck(blocks, 'sql_output'), "\n");
 	var obj = {
 		build_commands : commands,
@@ -785,4 +814,33 @@ update_script = function(block_id, blocks, desc) {
 	truthy(desc) ? obj['description'] = desc : console.log('no desc.');		
 	scripts.update(block_id, {$set : obj});
 	return obj;
+}
+
+share_script = function(script_id, share_with) {
+	var script_copy = _.first(scripts.find({_id : script_id}).fetch());
+	delete script_copy['_id'];
+	script_copy.user_id = share_with;
+	console.log(script_copy);
+	Meteor.call("share_script", script_copy, function(error, result) {truthy(error) ? console.log(error) : console.log(result);});
+}
+
+load_script = function(script_id) {
+	build_commands.find({user_id : Meteor.userId(), active : true}, {sort : {command_time: 1}}).forEach(function(b_c) {
+		build_commands.update(b_c['_id'], {$set : {active : false}});
+	});
+	console.log(_.first(scripts.find({_id : script_id}).fetch()).commands_input);
+	process_block(_.first(scripts.find({_id : script_id}).fetch()).commands_input);
+}
+
+clone_metric = function(metric_id) {
+	var metric = _.first(metric_library.find({_id : metric_id}).fetch());
+	delete metric['_id'];
+	metric['creator'] = Meteor.userId();
+	metric['collection'] = my_libname();
+	metric['metric_name'] = metric['metric_name']+"_clone";
+	return metric_library.insert(metric);
+}
+
+my_libname = function() {
+	return "My Library ("+Meteor.userId()+")";
 }

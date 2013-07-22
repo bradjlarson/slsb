@@ -1,3 +1,30 @@
+organizations structure:
+{
+	organization_name : String
+}
+
+groups structure:
+{
+	group_name : String,
+	organization_name : String 
+}
+
+admins structure:
+{
+	user_id : Meteor.userId(),
+	organization_name : String,
+	group_name : String,
+}
+
+access structure:
+{
+	user_id: Meteor.userId(),
+	organization_name, String,
+	group_name: String,
+	request_time : get_timestamp(),
+	access: ['granted','pending','declined']
+}
+
 Build Commands Structure:
 {
 user_id: Meteor.userId,
@@ -119,4 +146,4 @@ Modify Metric
 	
 Search Metrics:
 	search_condition
-	search_field
+	search_field	
