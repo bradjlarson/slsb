@@ -85,7 +85,7 @@
 			<td id="change_owner_verify"><b>Library:</b></td>
 			<td><select class="span8" id="metric_owner_change">
 				{{#each libraries}}
-				<option value="{{lib_name}}">{{this}}</option>
+				<option value="{{this}}">{{this}}</option>
 				{{/each}}
 				</select>
 				<!-- <input class="modify_text" name="collection" type="text" value="{{collection}}"> -->
@@ -110,16 +110,20 @@
 			<td><b>Times Used:</b></td>
 			<td><input class="modify_text uneditable-input" name="used" type="text" value="{{used}}" readonly></td>
 		</tr>
+		<tr>
+			<td><b>Metric ID:</b></td>
+			<td><input class="modify_text uneditable-input" name="mID" type="text" value="{{_id}}" readonly></td>
+		</tr>
 	</table>
 	{{/each}}		
 {{/isolate}}
 </template>		
 <template name="change_owner">
 	<div class="alert alert-error alert-block fade in">
-		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		<button type="button" class="close keep_ownership" data-dismiss="alert">&times;</button>
 		<h4>Warning!</h4>
 		<p>This will permanently change ownership. Please click Accept to continue.<p>
 		<p><a class="btn btn-danger" id="change_ownership" href="#change_owner">Accept</a>
-			<a class="btn btn-inverse" id="keep_ownership" data-dismiss="alert" href="#change_owner">Reject</a></p>	
+			<a class="btn btn-inverse keep_ownership" data-dismiss="alert" href="#change_owner">Reject</a></p>	
 	</div>
 </template>				

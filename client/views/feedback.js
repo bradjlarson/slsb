@@ -21,7 +21,7 @@ Template.feedback.events = {
 		var user_info = $('#group_users').val();
 		var user_name = user_info.slice(0,position(user_info,"(")-1);
 		var user_id = user_info.slice(position(user_info, "(")+1, position(user_info, ")"));
-		msgs.insert({from_user : Meteor.userId(), to_user : user_id, from_user_name : current_profile['name'], to_user_name : user_name, msgs : [{user_name : current_profile['name'], time : get_timestamp(), message : msg_txt}], last_msg_time : get_timestamp(), status : "active"});
+		msgs.insert({from_user : Meteor.userId(), to_user : user_id, from_user_name : current_profile['name'], to_user_name : user_name, msgs : [{user_name : current_profile['name'], msg_time : get_timestamp(), message : msg_txt}], last_msg_time : get_timestamp(), status : "active"});
 	},
 	'click .archive-submit' : function(event) {
 		var doc_id = $(event.target).attr('name');

@@ -38,43 +38,25 @@
 		    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
 		  </div>
 		</div>
-	<div id="join_org_modal2" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="join_org" aria-hidden="true">
+	<div id="manage_group_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="manage_groups" aria-hidden="true">
 	  <div class="modal-header">
 	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	    <h3 id="join_org">Select an organization to join</h3>
+	    <h3 id="manage_groups">Manage Groups:</h3>
 	  </div>
-	  <div class="modal-body" id="join_org_modal_body">
+	  <div class="modal-body" id="manage_group_modal_body">
 		<form>	
-		<label>Organization Name:</label>	
-		<select id="select_org">
-			<option value="none">None</option>
-			{{#each orgs}}
-				<option value="{{organization_name}}">{{organization_name}}</option>
+		<label>Remove Group Access</label>
+		<select id="remove_groups" multiple="multiple" class="span6">
+			{{#each libraries}}
+				<option value="{{this}}">{{this}}</option>
 			{{/each}}
 		</select>
-		</form>
-		<div class="form-actions">
-		<button class="btn btn-inverse" id="submit_org_request">Submit Access Request</button>		
-		</div>
-	  </div>
-	  <div class="modal-footer">
-	    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
-	  </div>
-	</div>
-	<div id="join_group_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="join_group" aria-hidden="true">
-	  <div class="modal-header">
-	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	    <h3 id="join_org">Select a group to join</h3>
-	  </div>
-	  <div class="modal-body" id="join_group_modal_body">
-		<form>	
-		<label>Group Name:</label>	
-		<select id="select_group">
-			<option value="none">None</option>
-			{{#each groups}}
-				<option value="{{group_name}}">{{group_name}}</option>
+		<label>Add Group Access</label>
+		<select id="add_groups" multiple="multiple" class="span6">
+			{{#each libraries}}
+				<option value="{{this}}">{{this}}</option>
 			{{/each}}
-		</select>
+		</select>			
 		</form>
 		<div class="form-actions">
 		<button class="btn btn-inverse" id="submit_group_request">Submit Access Request</button>		
@@ -108,20 +90,31 @@
 	{{#isolate}}
 	{{#if num_orgs}}
 		{{#if org_access}}
+			
 			{{#each org_access}}
 			<div>
-			<p>Organization: {{organization_name}}</p>
+			<form>	
+			<label>Organization:</label>	
+			<input type="text" class="uneditable-input input span3" value="{{organization_name}}">
 			{{#if group_access}}
+				<label>Group Names:</label>
+				<select disabled class="uneditable-input span3" multiple="multiple">
 				{{#each group_access}}
-				<p>Group Name: {{group_name}}</p>
+					<option value="{{group_name}}">{{group_name}}</option>
 				{{/each}}
+				</select>
+				<!--
+				<div class="form-action">
+				<button class="btn btn-inverse" id="launch_manage_groups">Manage Groups</button>
+				</div>
+				-->
 			{{else}}
 				{{#if group_pending}}
 					{{#each group_pending}}
 					<p><strong>Pending access request for group: {{group_name}}</strong></p>
 					{{/each}}
 				{{else}}		
-					<div class="btn-group pull-left">
+					<div class="btn-group form-action">
 						<button class="btn btn-inverse" id="launch_join_group">Join a group</button>
 					</div>
 				{{/if}}
@@ -134,11 +127,20 @@
 			{{/each}}
 		{{/if}}			
 	{{else}}
-	<div class="btn-group pull-left">
+	<div class="btn-group form-action">
 		<button class="btn btn-inverse" id="launch_join_org">Join an organization</button>
 	</div>
 	{{/if}}
 	{{/isolate}}	
+		<label>My Libraries:</label>
+		<select multiple="multiple" class="uneditable-input span3" disabled>
+			{{#each libraries}}
+				<option value="{{this}}">{{this}}</option>
+			{{/each}}
+		</select>
+		<label>My userID:</label>
+		<input type="text" class="input uneditable-input span3" disabled value="{{user_id}}">
+	</form>			
 	</div>
 </template>
 

@@ -3,6 +3,7 @@ Template.settings.rendered = function() {
 	$('#setting_user_name').val(current_profile['name']);
 	$('#setting_user_email').val(current_profile['email']);
 	$('#syntax-type').val(current_profile['syntax_type']);
+	Meteor.subscribe("my_libs", Session.get("my_groups"));
 	//Session.set("selected_org", false);
 }
 
@@ -44,6 +45,7 @@ Template.settings.events = {
 			access.insert({user_id : Meteor.userId(), user_name : current_profile['name'], organization_name : org_name, group_name : group_name, access_type : role, request_time : get_timestamp(), access : "pending"});
 			//$('#submit_org_requeset').html("Access Requested.").removeClass("btn-inverse").addClass("btn-success");
 		}
+		return false;
 	},
 	'click #launch_join_group' : function(event) {
 		$('#join_group_modal').modal('show');
@@ -69,6 +71,11 @@ Template.settings.events = {
 		{
 			Session.set("selected_org", false);
 		}
+		Meteor.subscribe("groups", Session.get("selected_org"));
+	},
+	'click #launch_manage_groups' : function(event) {
+		$('#manage_group_modal').modal('show');
+		return false;
 	}
 }
 
@@ -81,13 +88,13 @@ Template.settings.groups = function() {
 }
 
 Template.settings.num_orgs = function() {
-	return access.find({organization_name : {$exists : true}, access : {$in : ['granted', 'pending']}}).count();
+	return access.find({user_id : Meteor.userId(), organization_name : {$exists : true}, access : {$in : ['granted', 'pending']}}).count();
 }
 
 Template.settings.org_access = function() {
 	if(access.find({organization_name : {$exists : true}, access : 'granted'}).count() > 0)
 	{
-		return access.find({organization_name : {$exists : true}, access : 'granted'});
+		return access.find({user_id : Meteor.userId(), organization_name : {$exists : true}, access : 'granted'});
 	}
 	else
 	{
@@ -98,7 +105,7 @@ Template.settings.org_access = function() {
 Template.settings.group_access = function() {
 	if(access.find({group_name : {$exists : true}, access : 'granted'}).count() > 0)
 	{
-		return access.find({group_name : {$exists : true}, access : 'granted'});
+		return access.find({user_id : Meteor.userId(), group_name : {$exists : true}, access : 'granted'});
 	}
 	else
 	{
@@ -109,7 +116,7 @@ Template.settings.group_access = function() {
 Template.settings.group_pending = function() {
 	if(access.find({group_name : {$exists : true}, access : 'pending'}).count() > 0)
 	{
-		return access.find({group_name : {$exists : true}, access : 'pending'});
+		return access.find({user_id : Meteor.userId(), group_name : {$exists : true}, access : 'pending'});
 	}
 	else
 	{
@@ -118,7 +125,7 @@ Template.settings.group_pending = function() {
 }
 
 Template.settings.org_pending = function() {
-	return access.find({organization_name : {$exists : true}, access : 'pending'});
+	return access.find({user_id : Meteor.userId(), organization_name : {$exists : true}, access : 'pending'});
 }
 
 Template.settings.selected_org = function() {
@@ -129,6 +136,14 @@ Template.settings.selected_org = function() {
 
 Template.settings.selected_settings = function() {
 	return settings.find({setting_type : Session.get("settings_selected")}, {sort : {setting_name : 1}});
+}
+
+Template.settings.libraries = function() {
+	 return Session.get("my_groups");
+}
+
+Template.settings.user_id = function() {
+	return Meteor.userId();
 }
 
 function update_all() {

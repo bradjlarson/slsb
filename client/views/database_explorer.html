@@ -1,4 +1,12 @@
 <template name="explorer">
+	{{#if is_admin}}
+		{{> explorer_admin}}
+	{{else}}
+		{{> explorer_analyst}}
+	{{/if}}
+</template>		
+
+<template name="explorer_admin">
 	<div id="db_exp_add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="db-exp-add-header" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
@@ -104,12 +112,117 @@
 					<td><input class="input span12" type="text" id="add_col_desc" placeholder="column notes">
 						<button class="btn btn-inverse pull-right" id="add_new_column">Add</button></td>
 				</tr>
-				
+			</table>
+		</div>
+		{{/if}}
+		{{/isolate}}
+	</div>
+</template>	
+
+<template name="explorer_analyst">
+	<div id="db_exp_add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="db-exp-add-header" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+			<h3 id="db-exp-add-header">Command Console:</h3>
+		</div>
+		<div class="modal-body">
+			<div id="db-add-body">
+				<legend>Click on a command type to get started</legend>
+				<div class="span12">		
+				<textarea class="span11 pull-left" id="db-command-input" rows="6" value=""></textarea>
+				<div class="btn-group span11 pull-left">
+	 					<button id="db_create_predict" name="" class="btn btn-inverse span2 text-center db-add">create</btn>
+						<button id="db_add_metric_predict" name="" class="btn btn-inverse span3 text-center db-add">add_metric</btn>
+						<button id="db_select_predict" name="" class="btn btn-inverse span2 text-center db-add">select</btn>
+						<button id="db_raw_predict" name="" class="btn btn-inverse span2 text-center db-add">raw</btn>
+						<button id="db_create_metric_predict" name="" class="btn btn-inverse span3 text-center db-add">create_metric</btn>
+				</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Exit</button>
+			<button id="1.2" class="btn btn-success search-submit" data-dismiss="modal" aria-hidden="true">Submit</button>
+		</div>
+	</div>
+	<div class="span3">
+		<h4 class="page-header explorer_header">Databases:</h4>
+		<div class="input-append explorer_search pull-left">
+		  <input id="db_search" type="text" placeholder="database_name" class="input-large">
+		  <button id="db_query" class="btn btn-inverse" type="button">Search</button>		
+		</div>
+		<div class="pull-left">
+			<table class="table table-condensed table-hover table-bordered">
+			{{#each databases}}
+				<tr class="db_results" name="{{database_name}}">
+					<td>{{database_name}}</td>
+				</tr>
+			{{/each}}	
+			</table>
+		</div>
+	</div>
+	<div class="span3">
+		<h4 class="page-header explorer_header">Tables:</h4>
+		<div class="input-append explorer_search pull-left">
+		  <input id="table_search" type="text" placeholder="table_name" class="input-large">
+		  <button id="table_query" class="btn btn-inverse" type="button">Search</button>
+		</div>
+		<div class="pull-left">
+			{{#isolate}}
+			{{#if db_selected}}
+			<table class="table table-condensed table-hover table-bordered">	
+				{{#each tables}}
+				<tr class="table_results" name="{{table_name}}">
+					<td>{{table_name}}</td>
+				</tr>
+				{{/each}}
+			</table>
+			{{/if}}
+			{{/isolate}}
+		</div>
+	</div>
+	<div class="span5">
+		{{#isolate}}
+		{{#if table_selected}}		
+		<div class="table_info">
+				{{#each selected_table}}
+				<h6><em><strong>{{database_name}}.{{table_name}}:</strong></em></h6>
+							<!--
+				<form>
+					<textarea class="table-editable span12" name="table_desc.{{_id}}">{{table_desc}}</textarea>
+					<label>Default join columns: </label>
+					<input type="text" class="input-large table-editable" name="join_cols.{{_id}}" value ="{{join_cols}}">
+					<label>Default "where" clauses:</label>
+					<input type="text" class="input-large table-editable" name="extra_sql.{{_id}}" value ="{{extra_sql}}">
+					<label>Default indices: </label>
+					<input type="text" class="input-large table-editable" name="indices.{{_id}}" value ="{{indices}}">
+				</form>
+					-->	
+				<p>{{table_desc}}</p>
+				<p>Recommended join columns: {{join_cols}}</p>
+				<p>Recommended where clauses: {{extra_sql}}</p>
+				<p>Indices: {{indices}}</p>
+				{{/each}}
+		</div>
+		<div class="table_info">			
+		<h5 class="page-header explorer_header">Columns:</h5>
+		</div>
+		<div class="">
+			<table class="table table-condensed table-hover table-bordered">
+			{{#each columns}}
+				<tr class="db_columns" name="{{column_name}}">
+					<td>{{column_name}} <i name="{{column_name}}.{{_id}}" class="db-explore-add icon-plus pull-right "></td>
+					<td class="db_editable" name="{{_id}}">
+						<!-- <input class="col-editable input-block-level" name="{{_id}}" value="{{column_desc}}"> -->
+						{{column_desc}}
+					</td>
+				</tr>
+			{{/each}}
 			</table>
 			
 		</div>
 		{{/if}}
 		{{/isolate}}
 	</div>
-</template>					
+</template>				
 		

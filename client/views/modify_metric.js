@@ -105,6 +105,15 @@ Template.modify.events = {
 	}, 
 	'click #delete_metric' : function(event) {
 		metric_library.remove(Session.get("current_metric_m"));
+	},
+	'click .keep_ownership' : function(event) {
+		$('.alert').alert('close');
+		$('#metric_owner_change').val(my_libname());
+	},
+	'click #change_ownership' : function(event) {
+		console.log($('#metric_owner_change').val());
+		metric_library.update(Session.get('current_metric_m'), {$set : {collection : $('#metric_owner_change').val()}});
+		Session.set("current_metric_m", false);
 	}
 };
 
@@ -126,11 +135,11 @@ Template.modify.metrics = function() {
 	{
 		var mongo_query = '.*'+modify_query+'.*';
 		console.log(mongo_query);
-		return metric_library.find({ metric_name : {$regex : mongo_query, $options : 'i'}}, {$sort : {metric_name : 1}});
+		return metric_library.find({collection : my_libname(), metric_name : {$regex : mongo_query, $options : 'i'}}, {$sort : {metric_name : 1}});
 	}
 	else
 	{
-		return metric_library.find({}, {$sort : {metric_name : 1}});
+		return metric_library.find({collection : my_libname()}, {$sort : {metric_name : 1}});
 	}	
 }
 

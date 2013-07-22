@@ -48,14 +48,29 @@ Meteor.methods({
 		return group_names;
 	}
 })
+
+truthy = function(x) { return (x !== false) && existy(x); };
+existy = function(x) { return x != null };
 	
 //help_docs.insert({topic_name : "add_metric", help_text : help_text});
-Meteor.publish("metric_library", function() {
+Meteor.publish("my_libs", function() {
+	var group_names = [];
+	group_names.push("My Library ("+this.userId+")");
+	var groups = access.find({user_id : this.userId, access : "granted"}).fetch();
+	_.each(groups, function(x) {
+		group_names.push(x.organization_name+"-"+x.group_name);
+	});
+	return metric_library.find({collection : {$in : group_names}});
+});
+
+Meteor.publish("my_metrics", function(libs) {
 	return metric_library.find({creator : this.userId});
 });
+
 Meteor.publish("build_commands", function() {
 	return build_commands.find({user_id : this.userId});
 });
+
 Meteor.publish("databases", function() {
 	return databases.find({});
 });
@@ -98,26 +113,23 @@ Meteor.publish("organizations", function() {
 	return organizations.find();
 });
 
-Meteor.publish("groups", function() {
-	var my_orgs = _.pluck(access.find({user_id : this.userId, organization_name : {$exists : true}}).fetch(), "organization_name");
-	return groups.find({organization_name : {$in : my_orgs}});
+Meteor.publish("groups", function(org) {
+	//var my_orgs = _.pluck(access.find({user_id : this.userId, organization_name : {$exists : true}}).fetch(), "organization_name");
+	return groups.find({organization_name : org});
 });
 
 Meteor.publish("access", function() {
-	return access.find();
-	/*
+	//return access.find();
 	if (admins.find({user_id : this.userId}).count() > 0)
 	{
 		var admin_groups = _.pluck(admins.find({user_id : this.userId}).fetch(), "group_name");
-		var admin_orgs = _.pluck(admins.find({user_id : this.userId}).fetch(), "organization_name");
 		console.log(admin_groups);
-		console.log(admin_orgs);
-		return access.find({$or: [{group_name : {$in : admin_groups}, organization_name : {$in : admin_orgs}}]});
+		return access.find({group_name : {$in : admin_groups}});
 	}
 	else
 	{
 		return access.find({user_id : this.userId});
-	}*/
+	}
 });
 
 Meteor.publish("admins", function() {
@@ -157,13 +169,13 @@ Meteor.startup(function() {
 	Session.setDefault("mod_saved", true);
 	Session.setDefault("preview_type", "create");
 	Session.setDefault("selected_org", false);
+	Session.setDefault("my_groups", Meteor.userId());
 	Meteor.call("get_my_groups", function(error, result) {Session.set("my_groups", result)});		
 });
 /////////////////////////////////////////////////////	
 //Subscriptions
 //Coming after autopublish is turned off
 
-Meteor.subscribe("metric_library");
 Meteor.subscribe("build_commands");
 Meteor.subscribe("databases");
 Meteor.subscribe("tables");
@@ -175,10 +187,12 @@ Meteor.subscribe("export_docs");
 Meteor.subscribe("settings");
 Meteor.subscribe("scripts");
 Meteor.subscribe("organizations");
-Meteor.subscribe("groups");
+Meteor.subscribe("groups", Session.get("selected_org"));
 Meteor.subscribe("access");
 Meteor.subscribe("admins");
 Meteor.subscribe("msgs");
+Meteor.subscribe("my_metrics");
+Meteor.subscribe("my_libs", Session.get("my_groups"));
 
 /////////////////////////////////////////////////////
 //Misc.
@@ -243,8 +257,8 @@ Template.side_bar.admin_check = function() {
 	}
 };
 
-Template.side_bar.conversations = function() {
-	return feedback.find({user_id : Meteor.userId(), resolved : true}, {sort : {create_date : -1}}).count();
+Template.side_bar.convos = function() {
+	return msgs.find({user_id : Meteor.userId(), status : 'active'}, {sort : {last_msg_time : -1}}).count();
 };
 
 Template.side_bar.adminsations = function() {
@@ -279,6 +293,4 @@ Template.page_header.events= {
 };
 
 }
-
-"create({3pdm_current},{acct_id:acct_tot_due_amt:collns_trtmt_seg_cd:collns_trtmt_seg_entry_dt},{pcdw.T2_ACCT_COLLNS_TRTMT_BC},{where acct_sfx_num = 0 and provdr_1_id = 1 and collns_trtmt_seg_cd = '03'},{{acct_id}},{});add_metric({balance_bc},{get_3pdm_current},{{acct_id}},{acct_id});"
 
