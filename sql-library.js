@@ -36,7 +36,8 @@ Meteor.methods({
 	},
 	share_script : function(script) {
 		console.log(script);
-		return scripts.insert(script);
+		scripts.insert(script);
+		return "script shared";
 	},
 	get_my_groups : function() {
 		var group_names = [];
@@ -270,6 +271,12 @@ Template.side_bar.adminsations = function() {
 Template.side_bar.num_commands = function() {
 	return build_commands.find({user_id : Meteor.userId(), active : true}, {sort : {command_time: 1}}).count();
 }
+
+Template.side_bar.renderd = function() {
+	Meteor.call("get_my_groups", function(error, result) {Session.set("my_groups", result)});		
+}
+
+
 
 /////////////////////////////////////////////////////
 //Helpers

@@ -3,7 +3,8 @@ Template.settings.rendered = function() {
 	$('#setting_user_name').val(current_profile['name']);
 	$('#setting_user_email').val(current_profile['email']);
 	$('#syntax-type').val(current_profile['syntax_type']);
-	Meteor.subscribe("my_libs", Session.get("my_groups"));
+	
+	Meteor.subscribe("my_libs");
 	//Session.set("selected_org", false);
 }
 
