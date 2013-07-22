@@ -821,7 +821,7 @@ share_script = function(script_id, share_with) {
 	delete script_copy['_id'];
 	script_copy.user_id = share_with;
 	console.log(script_copy);
-	Meteor.call("share_script", script_copy, function(error, result) {truthy(error) ? console.log(error) : console.log(result);});
+	Meteor.call("share_script", script_copy);
 }
 
 load_script = function(script_id) {
