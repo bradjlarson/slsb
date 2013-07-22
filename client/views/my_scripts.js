@@ -55,6 +55,7 @@ Template.my_scripts.events = {
 	'click #share_script_submit' : function(event) {
 		var user = extract("group_member_id", $('#group_users').val());
 		share_script(Session.get("selected_script"), user);
+		return false;
 	},
 	'click .edit-commands' : function(event) {
 		$('#update_script').removeClass('btn-inverse').addClass('btn-warning').html('Save Changes');
