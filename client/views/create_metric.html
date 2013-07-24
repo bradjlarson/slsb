@@ -92,7 +92,11 @@
 							<textarea id="metric_desc" rows="3" cols="200" class="span12" placeholder="Enter a description here (highly recommended)"></textarea>
 						</div>
 						<div class="submit_field">
-							<input type="text" class="span12" placeholder="Enter a collection here..." id="metric_collection">
+							<select class="modify_text span8" name="collection" id="metric_owner_change">
+								{{#each libraries}}
+								<option value="{{this}}">{{this}}</option>
+								{{/each}}
+							</select>
 						</div>					
 					 </div>
 					 <div class="modal-footer">

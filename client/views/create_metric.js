@@ -1,7 +1,7 @@
 //Create
 Template.create.helpers({
-	sql_preview : function() { return add_metric_preview();}
-	
+	sql_preview : function() { return add_metric_preview();},
+	libraries : function() {return Session.get("my_groups");}
 	/*
 	prep_sql: function() {return mod_prep_sql(default_to(Session.get("prep_sql"), "--prep sql"));},
 	metric_name: function() {return table_name(default_to(Session.get("metric_name"), "metric_name"));},
@@ -17,6 +17,10 @@ Template.create.rendered = function() {
 	$('.create_input').each(function(index) {
 		truthy(Session.get($(this).attr("id"))) ? $(this).val(Session.get($(this).attr("id"))) : $(this).val("");
 	});
+}
+
+Template.selected_metric.libraries = function() {
+	 return Session.get("my_groups");
 }
 
 add_metric_preview = function() {

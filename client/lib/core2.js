@@ -463,8 +463,15 @@ from = function(where) {
 }
 
 conditions = function(how) {
-	var clauses = extract("sub_args", how);
-	return is_empty(_.without(clauses, "")) ? "" : tostring(first_rest("WHERE ", "AND ", _.without(clauses, ""), "special"));
+	if(truthy(how))
+	{
+		var clauses = extract("sub_args", how);
+		return is_empty(_.without(clauses, "")) ? "" : tostring(first_rest("WHERE ", "AND ", _.without(clauses, ""), "special"));
+	}
+	else
+	{
+		return "";
+	}
 }
 
 specify = function(things) {
