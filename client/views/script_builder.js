@@ -8,12 +8,6 @@ Date.prototype.timeNow = function(){
      return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
 };
 
-
-/*
-Template.script_builder.command = function() {
-	return build_commands.find({user_id: Meteor.userId()}, {sort: {command_time: -1}, limit: 10});
-}
-*/
 Template.script_builder.existing_scripts = function() {
 	return scripts.find();
 }
@@ -73,11 +67,23 @@ Template.script_builder.current_command = function() {
 		return "";
 	}
 }
-/*
-Template.script_builder.key_cuts = function() {
-	Mousetrap.bind('up', function() {var current_num = Session.get("history_num"); var new_num = current_num ++; Session.set("history_num", new_num);});
+
+Template.script_builder.rendered = function() {
+	var build_commands = Template.script_builder.current_script().fetch();
+	var html = _.reduce(build_commands, function(memo, next) {
+		//return memo+'<pre class="edit-command" contenteditable="true" name="'+next['_id']+'">'+next['command_block']+'</pre>\n'
+		return memo+'<textarea type="text" rows="8" class="edit-command-pop" name="'+next['_id']+'" value="'+next['command_block']+'">'+next['command_block']+'</textarea>'
+	}, "");
+	html = bookend('<form>',html,'</form>');
+	var options = {
+		html : true,
+		placement : "bottom",
+		trigger : "click",
+		title: '<h4>Commands:<button id="update_script" class="btn btn-small btn-inverse pull-right">Update Script</button></h4>',
+		content : html
+	};
+	$('#script_commands').popover(options);
 }
-*/
 
 /////////////////////////////////////////////////
 //Script Builder Events
@@ -137,24 +143,29 @@ Template.script_builder.events = {
 		//console.log(metric_id);
 		build_commands.update(metric_id, {$set : {active : false}});
 	},
-	'change .edit-command' : function(event) {
-		var command_id = $(event.target).attr("name");
-		var new_val = $(event.target).val();
-		//console.log(command_id);
-		console.log(new_val);
-		//build_commands.update(command_id, {$set : {command_block : new_val}});
-		recompile(command_id, new_val);
+	'click #update_script' : function(event) {
+		$('.edit-command-pop').each(function() {
+			recompile($(this).attr("name"), $(this).val());
+		});
+		$('#update_script').removeClass("btn-warning").addClass("btn-inverse");
+	},
+	'click .edit-command' : function(event) {
+		$('#recompile_script').removeClass("btn-inverse").addClass("btn-warning");
+	},
+	'change .edit-command-pop' : function(event) {
+		$('#update_script').removeClass("btn-inverse").addClass("btn-warning");
 	},
 	'click #recompile_script' : function(event) {
 		console.log("recompile clicked");
-		var metrics = build_commands.find({user_id : Meteor.userId(), active : true}).fetch();
-		for (metric in metrics)
-		{
-			if (metric)
-			{
-				recompile(metrics[metric]['_id'], metrics[metric]['command_block']);
-			}
-		}
+		$('.edit-command').each(function() {
+			var doc_id = $(this).attr("id");
+			var command_block = $(this).text();
+			recompile(doc_id, command_block);
+		});
+		$('#recompile_script').removeClass("btn-warning").addClass("btn-inverse");
+	},
+	'click #script_commands' : function(event) {
+		$(event.target).popover('toggle');
 	},
 	'click #simple_form_select' : function(event) {
 		$("#command_input").html(Meteor.render(Template.simple_form));

@@ -13,16 +13,65 @@ scripts = new Meteor.Collection("scripts");
 organizations = new Meteor.Collection("organizations");
 groups = new Meteor.Collection("groups");
 admins = new Meteor.Collection("admins");
+access = new Meteor.Collection("access");
+msgs = new Meteor.Collection("msgs");
 
 if (Meteor.isServer) {
 	
+Accounts.onCreateUser(function(options, user) {
+	console.log(user);
+	settings.insert({user_id : user['_id'], name : "", email : "", syntax_type : ""});
+	if (options.profile) {user.profile = options.profile;}
+	return user;
+});
+
+Meteor.methods({
+	get_group_members : function() {
+		var groups = _.pluck(access.find({user_id : this.userId, group_name : {$exists : true}}).fetch(), "group_name");
+		var user_names = [];
+		_.each(access.find({group_name : {$in : groups}, access : "granted"}).fetch(), function(access) {
+			user_names.push(access.user_name+" ("+access.user_id+")");
+		});
+		return user_names;
+	},
+	share_script : function(script) {
+		console.log(script);
+		scripts.insert(script);
+		return "script shared";
+	},
+	get_my_groups : function() {
+		var group_names = [];
+		group_names.push("My Library ("+this.userId+")");
+		var groups = access.find({user_id : this.userId, access : "granted"}).fetch();
+		_.each(groups, function(x) {
+			group_names.push(x.organization_name+"-"+x.group_name);
+		});
+		return group_names;
+	}
+})
+
+truthy = function(x) { return (x !== false) && existy(x); };
+existy = function(x) { return x != null };
+	
 //help_docs.insert({topic_name : "add_metric", help_text : help_text});
-Meteor.publish("metric_library", function() {
+Meteor.publish("my_libs", function() {
+	var group_names = [];
+	group_names.push("My Library ("+this.userId+")");
+	var groups = access.find({user_id : this.userId, access : "granted"}).fetch();
+	_.each(groups, function(x) {
+		group_names.push(x.organization_name+"-"+x.group_name);
+	});
+	return metric_library.find({collection : {$in : group_names}});
+});
+
+Meteor.publish("my_metrics", function(libs) {
 	return metric_library.find({creator : this.userId});
 });
+
 Meteor.publish("build_commands", function() {
 	return build_commands.find({user_id : this.userId});
 });
+
 Meteor.publish("databases", function() {
 	return databases.find({});
 });
@@ -33,11 +82,20 @@ Meteor.publish("columns", function() {
 	return columns.find({});
 });
 Meteor.publish("settings", function() {
+	this.ready();
 	return settings.find({user_id : this.userId});
 });
 Meteor.publish("feedback", function() {
-	return databases.find({user_id : this.userId});
+	if (admins.find({user_id : this.userId}).count() > 0)
+	{
+		return feedback.find();
+	}
+	else
+	{
+		return feedback.find({user_id : this.userId});
+	}
 });
+
 Meteor.publish("docs", function() {
 	return docs.find({});
 });
@@ -54,6 +112,33 @@ Meteor.publish("scripts", function() {
 
 Meteor.publish("organizations", function() {
 	return organizations.find();
+});
+
+Meteor.publish("groups", function(org) {
+	//var my_orgs = _.pluck(access.find({user_id : this.userId, organization_name : {$exists : true}}).fetch(), "organization_name");
+	return groups.find({organization_name : org});
+});
+
+Meteor.publish("access", function() {
+	//return access.find();
+	if (admins.find({user_id : this.userId}).count() > 0)
+	{
+		var admin_groups = _.pluck(admins.find({user_id : this.userId}).fetch(), "group_name");
+		console.log(admin_groups);
+		return access.find({group_name : {$in : admin_groups}});
+	}
+	else
+	{
+		return access.find({user_id : this.userId});
+	}
+});
+
+Meteor.publish("admins", function() {
+	return admins.find({user_id : this.userId});
+});
+
+Meteor.publish("msgs", function() {
+	return msgs.find({$or: [{from_user : this.userId}, {to_user : this.userId}]});
 });
 
 }
@@ -83,13 +168,15 @@ Meteor.startup(function() {
 	Session.setDefault("syntax-type", "teradata");
 	Session.setDefault("advanced_search", false);
 	Session.setDefault("mod_saved", true);
-	Session.setDefault("preview_type", "create");		
+	Session.setDefault("preview_type", "create");
+	Session.setDefault("selected_org", false);
+	Session.setDefault("my_groups", Meteor.userId());
+	Meteor.call("get_my_groups", function(error, result) {Session.set("my_groups", result)});		
 });
 /////////////////////////////////////////////////////	
 //Subscriptions
 //Coming after autopublish is turned off
 
-Meteor.subscribe("metric_library");
 Meteor.subscribe("build_commands");
 Meteor.subscribe("databases");
 Meteor.subscribe("tables");
@@ -101,6 +188,12 @@ Meteor.subscribe("export_docs");
 Meteor.subscribe("settings");
 Meteor.subscribe("scripts");
 Meteor.subscribe("organizations");
+Meteor.subscribe("groups", Session.get("selected_org"));
+Meteor.subscribe("access");
+Meteor.subscribe("admins");
+Meteor.subscribe("msgs");
+Meteor.subscribe("my_metrics");
+Meteor.subscribe("my_libs", Session.get("my_groups"));
 
 /////////////////////////////////////////////////////
 //Misc.
@@ -143,15 +236,55 @@ Template.side_bar.events = {
 	'click #launch_docs' : function(event) {
 		$('#main').html(Meteor.render(Template.docs));},
 	'click #launch_export' : function(event) {
-		$('#main').html(Meteor.render(Template.export_main));}												
+		$('#main').html(Meteor.render(Template.export_main));},
+	'click #launch_admin' : function(event) {
+		var check = admins.find({user_id : Meteor.userId()});
+		if(check.count() > 0)
+		{
+			$('#main').html(Meteor.render(Template.admin));
+		}
+	}													
 };
+
+Template.side_bar.admin_check = function() {
+	var check = admins.find({user_id : Meteor.userId()});
+	if(check.count() > 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+};
+
+Template.side_bar.convos = function() {
+	return msgs.find({user_id : Meteor.userId(), status : 'active'}, {sort : {last_msg_time : -1}}).count();
+};
+
+Template.side_bar.adminsations = function() {
+	var admin_profile = _.first(admins.find().fetch());
+	return feedback.find({resolved : false}, {sort : {create_date : -1}}).count()  
+	+ access.find({group_name : admin_profile.group_name, access : "pending"}).count();
+};
+
+Template.side_bar.num_commands = function() {
+	return build_commands.find({user_id : Meteor.userId(), active : true}, {sort : {command_time: 1}}).count();
+}
+
+Template.side_bar.renderd = function() {
+	Meteor.call("get_my_groups", function(error, result) {Session.set("my_groups", result)});		
+}
+
+
 
 /////////////////////////////////////////////////////
 //Helpers
 //Welcome Screen
 Template.welcome_screen.current_user = function() {
 	if (Meteor.user()) {
-		return Meteor.user().profile.name;	
+		var current_profile = _.first(settings.find({user_id : Meteor.userId()}, {sort : {create_time : 1}}).fetch());
+		return is_empty(current_profile) ? "new user" : current_profile['name'];
 	}
 	else 
 	{

@@ -30,22 +30,50 @@
 		</div>
 		<div class="modal-body">
 			<div id="search-adv-body">
-				<form>
+				<form class="form-horizontal">
 					<legend>Fill out any combination of inputs:</legend>
-					<label>metric_name contains:</label>
-					<input name="metric_name" class="input input-large adv-search-regex" placeholder="metric_name">
-					<label>cols_added contains:</label>
-					<input name="cols_added" class="input input-large adv-search-regex" placeholder="cols_added">
-					<label>join_src contains:</label>
-					<input name="join_src" class="input input-large adv-search-regex" placeholder="join_src">
-					<label>join_cols contains:</label>
-					<input name="join_cols" class="input input-large adv-search-regex" placeholder="join_cols">
-					<label>extra_sql contains:</label>
-					<input name="extra_sql" class="input input-large adv-search-regex" placeholder="extra_sql">
-					<label>indices contains:</label>
-					<input name="" class="input input-large adv-search-regex" placeholder="indices">
-					<label>description contains:</label>
-					<input id="adv_metric_name" class="input input-large adv-search-regex" placeholder="key words">
+					<div class="control-group">
+					<label class="control-label">metric_name contains:</label>
+					<div class="controls">
+					<input name="metric_name" type="text" class="input input-large adv-search-regex" placeholder="metric_name">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">cols_added contains:</label>
+					<div class="controls">
+					<input name="cols_added" type="text" class="input input-large adv-search-regex" placeholder="cols_added">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">join_src contains:</label>
+					<div class="controls">
+					<input name="join_src" type="text" class="input input-large adv-search-regex" placeholder="join_src">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">join_cols contains:</label>
+					<div class="controls">
+					<input name="join_cols" type="text" class="input input-large adv-search-regex" placeholder="join_cols">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">extra_sql contains:</label>
+					<div class="controls">
+					<input name="extra_sql" type="text" class="input input-large adv-search-regex" placeholder="extra_sql">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">indices contains:</label>
+					<div class="controls">
+					<input name="indices" type="text" class="input input-large adv-search-regex" placeholder="indices">
+					</div>
+					</div>
+					<div class="control-group">
+					<label class="control-label">description contains:</label>
+					<div class="controls">
+					<input id="adv_metric_name" name="description" type="text" class="input input-large adv-search-regex" placeholder="key words">
+					</div>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -104,7 +132,7 @@
 				<div class="span4">
 				<table class="table table-bordered">
 					<tr>
-						<td><b>Collection:</b></td>
+						<td><b>Library:</b></td>
 						<td class="field_result">{{collection}}</td>
 					</tr>
 					<tr>
@@ -117,6 +145,7 @@
 					</tr>
 				</table>
 				<button id="{{_id}}" name="{{metric_name}}" class="btn btn-inverse add_explorer_metric">Add to Script</button>
+				<button name="{{_id}}" class="btn btn-inverse clone-metric">Clone Metric</button>
 			</div>			
 			</div>
 		{{/each}}

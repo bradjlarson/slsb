@@ -18,16 +18,17 @@
 <template name="side_bar">
 	<div class="tabbable tabs-left affix">
 		<ul class="nav nav-tabs">
-			<li id="launch_build"><a href="#build" data-toggle="tab">Script Builder</a></li>
-			<li id="launch_explore"><a href="#explore" data-toggle="tab">DB Explorer</a></li>
-			<li id="launch_search"><a href="#search"  data-toggle="tab">Search Metrics</a></li>	
-			<li id="launch_create"><a href="#create"data-toggle="tab">Create Metric</a></li>				
-			<li id="launch_modify"><a href="#modify" data-toggle="tab">Modify Metric</a></li>	
-			<li id="launch_scripts"><a href="#modify" data-toggle="tab">My Scripts</a></li>
-			<li id="launch_settings"><a href="#settings" data-toggle="tab">Settings</a></li>
-			<li id="launch_feedback"><a href="#feedback" data-toggle="tab">Feedback</a></li>
-			<li id="launch_docs"><a href="#docs" data-toggle="tab">Documentation</a></li>
-			<li id="launch_export"><a href="#export" data-toggle="tab">Export Data</a></li>
+			<li id="launch_build" class="side-nav"><a href="#build" data-toggle="tab">Console <span class="badge badge-inverse pull-right">{{num_commands}}</span></a></li>
+			<li id="launch_explore" class="side-nav"><a href="#explore" data-toggle="tab">DB Explorer</a></li>
+			<li id="launch_search" class="side-nav"><a href="#search"  data-toggle="tab">Metric Library</a></li>	
+			<li id="launch_create" class="side-nav"><a href="#create"data-toggle="tab">Create Metric</a></li>				
+			<li id="launch_modify" class="side-nav"><a href="#modify" data-toggle="tab">Modify Metric</a></li>	
+			<li id="launch_scripts" class="side-nav"><a href="#modify" data-toggle="tab">My Scripts</a></li>
+			<li id="launch_settings" class="side-nav"><a href="#settings" data-toggle="tab">Settings</a></li>
+			<li id="launch_feedback" class="side-nav"><a href="#feedback" data-toggle="tab">Feedback {{#if convos}}<span class="badge badge-inverse pull-right">{{convos}}</span>{{/if}}</a></li>
+			<li id="launch_docs" class="side-nav"><a href="#docs" data-toggle="tab">Documentation</a></li>
+			<li id="launch_export" class="side-nav"><a href="#export" data-toggle="tab">Export Data</a></li>
+			{{#isolate}}{{#if admin_check}}<li id="launch_admin" class="side-nav"><a href="#admin" data-toggle="tab">Admin{{#if adminsations}}<span class="badge badge-inverse pull-right">{{adminsations}}</span>{{/if}}</a></li>{{/if}}{{/isolate}}
 		</ul>
 	</div>
 </template>
@@ -49,7 +50,6 @@
 </template>		
 
 				
-					
 					
 					
 					

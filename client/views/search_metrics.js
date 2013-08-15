@@ -58,6 +58,13 @@ Template.search.events = {
 	'click #search_raw_predict' : function(event) {
 		$('#search-command-input').val(predict("raw", fetch(Session.get("search_metric_name"), "metric_library")));
 	},
+	'click .clone-metric' : function(event) {
+		Session.set("current_metric_m", clone_metric($(event.target).attr("name")));
+		Session.set('metric_searched_m', false);
+		$('#main').html(Meteor.render(Template.modify));
+		$('.side-nav').removeClass("active");
+		$('#launch_modify').addClass("active");
+	}
 }
 
 //Search

@@ -10,11 +10,13 @@ Template.script_sql.sql_output = function() {
 	return _.first(scripts.find({_id : Session.get("selected_script")}).fetch()).sql_output;
 }
 
-Template.script_blocks.commands_input = function() {
-	return _.first(scripts.find({_id : Session.get("selected_script")}).fetch()).commands_input;
+Template.script_blocks.build_commands = function() {
+	return _.first(scripts.find({_id : Session.get("selected_script")}).fetch()).build_commands;
 }
 Template.my_scripts.rendered = function() {
 	truthy(Session.get("selected_script")) ? $('#'+Session.get("selected_script")).addClass("info") : console.log('no script selected');
+	var user_names = [];
+	Meteor.call("get_group_members", function(error, result) {console.log(result); user_names = result; $('#group_users').typeahead({source : result});});
 }
 
 Template.my_scripts.events = {
@@ -30,9 +32,7 @@ Template.my_scripts.events = {
 	},
 	'click .script_results' : function(event) {
 		var selected = event.currentTarget;
-		$('.script_results').each(function(item) {
-			$(item).removeClass("info");
-		});
+		$('#'+Session.get('selected_script')).removeClass('info');
 		$(selected).addClass("info");
 		var text = $(selected).attr('id');
 		console.log(text);
@@ -50,6 +50,23 @@ Template.my_scripts.events = {
 	'click .share-script' : function(event) {
 		$('#share-script-submit').attr('name', $(event.target).attr('name'));
 		//$('#share-group-members')
-		$('#share-modal').modal('show');
+		$('#share_script_modal').modal('show');
+	},
+	'click #share_script_submit' : function(event) {
+		var user = extract("group_member_id", $('#group_users').val());
+		share_script(Session.get("selected_script"), user);
+		return false;
+	},
+	'click .edit-commands' : function(event) {
+		$('#update_script').removeClass('btn-inverse').addClass('btn-warning').html('Save Changes');
+	},
+	'click #update_script' : function(event) {
+		$(event.target).removeClass('btn-warning').addClass('btn-inverse').html('Saved!');
+	},
+	'click .load-script' : function(event) {
+		$('#load_script_modal').modal('show');
+	},
+	'click #submit_load_script' : function(event) {
+		load_script(Session.get("selected_script"));
 	}	
 }

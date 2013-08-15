@@ -1,16 +1,68 @@
 <template name="feedback">
-	<div class="span6 offset1">
+	<div class="span4 offset1">
 		<form id="site_feedback">
 			<legend>Please enter your feedback below:</legend>
-			<textarea id="feedback_text" rows="6" class="span12" placeholder="We want to hear from you!"></textarea>
 			<select id="feedback_type">
 				<option value="general">General Feedback</option>
 				<option value="suggestion">Suggestion</option>
 				<option value="bug">Bug</option>
 			</select>
+			<textarea id="feedback_text" rows="6" class="span12" placeholder="We want to hear from you!"></textarea>
 			<div>
 			<button class="btn btn-inverse" id="feedback_submit">Submit</button>
 			</div>
 		</form>
+	</div>
+	<div class="span4 offset1">
+		<form id="message_users">
+			<legend>Select a user to message:</legend>
+			<input id="group_users" type="text" class="input-xlarge" placeholder="search user name here...">
+			<textarea id="msg_text" rows="6" class="span12" placeholder="Your message here..."></textarea>
+			<div>
+			<button class="btn btn-inverse" id="message_submit">Submit</button>
+			</div>
+		</form>
+		<div id="convo_container" class="accordion">
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#convo_container" href="#conversations">
+					<div class="page-header">
+						<p>Conversations</p>
+					</div>
+				</a>
+			</div>	
+		<div id="conversations" class="accordion accordion-body collapse">
+			{{#if convo}}
+			{{#each convo}}
+			<div class="accordion-group">
+			    <div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#conversations" href="#{{_id}}">
+					<div class="page-header">
+						<p>Time: {{last_msg_time}} | With: {{from_user_name}}</p>
+					</div>
+				</a>	
+				<div id="{{_id}}" class="accordion-body collapse in">
+		      		<div class="accordion-inner">
+						{{#each msgs}}
+						<div class="message">	
+							<p>{{user_name}} ({{time}}):</p>
+							<p class="well">{{message}}</p>
+						</div>
+						{{/each}}
+						<textarea class="respond span12" rows="4" id="{{_id}}_respond"></textarea>
+						<button class="btn btn-inverse respond-submit" name="{{_id}}">Respond</button>
+						<button class="btn btn-inverse archive-submit" name="{{_id}}">Archive</button>	
+					</div>	
+				</div>
+			</div>
+			{{/each}}
+			{{else}}
+			<div>
+				<p class="text-center">No active conversations.</p>
+			</div>
+			{{/if}}	
+		</div>
+			</div>
+		</div>
 	</div>
 </template>

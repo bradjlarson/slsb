@@ -1,0 +1,118 @@
+<template name="admin">
+	{{#isolate}}
+	{{#if is_admin}}
+		<div id="message-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="message-header" aria-hidden="true">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+				<h4 id="message-header">Send a message to a user:</h4>
+			</div>
+			<div class="modal-body">
+				<div id="message-body">
+					<p id="message-user_id">User:</p>
+					<textarea class="span12" id="message-text" rows="4" placeholder="Enter your message here..."></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button id="message-send" class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Send</button>
+			</div>
+		</div>
+		<div id="access_container" class="accordion">
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#access_container" href="#access_requests">
+					<div class="page-header">
+						<p>Access Requests</p>
+					</div>
+				</a>
+			</div>	
+		<div id="access_requests" class="accordion accordion-body collapse">
+			{{#if access_request}}
+			{{#each access_request}}
+			<div class="accordion-group">
+			    <div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#access_requests" href="#{{_id}}">
+					<div>
+						<p>Time: {{request_time}} | Organization: {{organization_name}} | Group Name: {{group_name}}</p>
+					</div>
+				</a>	
+				<div id="{{_id}}" class="accordion-body collapse">
+		      		<div class="accordion-inner">
+						<div class="well">
+							<p>{{user_name}} ({{user_id}})</p>
+							<p>Role: {{access_type}}</p>
+							<button class="btn btn-inverse grant-access" name="{{_id}}">Approve</button>	
+							<button class="btn btn-inverse decline-access" name="{{_id}}">Decline</button>	
+					</div>	
+				</div>
+			</div>
+			{{/each}}
+			{{else}}
+			<div>
+				<p class="text-center">No unresolved access requests.</p>
+			</div>
+			{{/if}}	
+		</div>
+			</div>
+		</div>
+		<div id="convo_container" class="accordion">
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#convo_container" href="#conversations">
+					<div class="page-header">
+						<p>User Feedback</p>
+					</div>
+				</a>
+			</div>	
+		<div id="conversations" class="accordion accordion-body collapse">
+			{{#if issue}}
+			{{#each issue}}
+			<div class="accordion-group">
+			    <div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#conversations" href="#{{_id}}">
+					<div>
+						<p>Created: {{create_time}} | User: {{user_id}} | Type: {{type}}</p>
+					</div>
+				</a>	
+				<div id="{{_id}}" class="accordion-body collapse">
+		      		<div class="accordion-inner">
+						{{#each messages}}
+						<div class="message">	
+							<p>{{user}} ({{time}}):</p>
+							<p class="well">{{text}}</p>
+						</div>
+						{{/each}}
+						<textarea class="respond span12" rows="4" id="{{_id}}_respond"></textarea>
+						<button class="btn btn-inverse respond-submit" name="{{_id}}">Respond</button>	
+					</div>	
+				</div>
+			</div>
+			{{/each}}
+			{{else}}
+			<div>
+				<p class="text-center">No unresolved conversations. </p>
+			</div>
+			{{/if}}	
+		</div>
+			</div>
+		</div>	
+		<div id="message_users">
+			<h4>Send messages to users</h4>
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<td><strong>All users</strong> <button class="btn btn-inverse send-message pull-right" name="all">Message</button></td>
+				</tr>
+				{{#each user_profile}}
+				<tr>
+					<td>{{email}}, {{user_id}} <button class="btn btn-inverse send-message pull-right" name="{{user_id}}">Message</button></td>
+				</tr>
+				{{/each}}
+			</table>
+		</div>			
+	{{else}}
+		<div>
+			<p>Error, page not found.</p>
+		</div>
+	{{/if}}
+	{{/isolate}}
+</template>			
+					

@@ -28,6 +28,18 @@ get_metric_vals = function(selector) {
 	return vals;
 }
 
+Template.selected_metric.rendered = function() {
+	var html = bookend("<p>", "This will permanently change ownership of this metric. Click 'Agree' to continue", "</p>")+'<button class="btn-inverse" id="change_owner">Agree</button>';
+	var options = {
+		html : true,
+		placement : "bottom",
+		trigger : "click",
+		title: '<h4>Change Metric Owner</h4>',
+		content : html
+	};
+	$('#change_owner_verify').popover(options);
+}
+
 //Modify Metric Events:
 Template.selected_metric.events = {
 	'change .modify_text' : function(event) {
@@ -48,6 +60,9 @@ Template.selected_metric.events = {
 	'click #modify_raw_predict' : function(event) {
 		var command = predict("raw", proxy_metric(get_metric_vals('.modify_text'), "array"));
 		$('#modify-preview').html(command);
+	},
+	'change #metric_owner_change' : function(event) {
+		$('#change_owner_alert').html(Meteor.render(Template.change_owner));
 	}
 };
 
@@ -84,8 +99,21 @@ Template.modify.events = {
 		Session.set("mod_saved", true);
 		$(event.target).html("Saved!");
 	},
+	'click #clone_metric' : function(event) {
+		$('#'+Session.get("current_metric_m")).removeClass("info");
+		Session.set("current_metric_m", clone_metric(Session.get("current_metric_m")));
+	}, 
 	'click #delete_metric' : function(event) {
 		metric_library.remove(Session.get("current_metric_m"));
+	},
+	'click .keep_ownership' : function(event) {
+		$('.alert').alert('close');
+		$('#metric_owner_change').val(my_libname());
+	},
+	'click #change_ownership' : function(event) {
+		console.log($('#metric_owner_change').val());
+		metric_library.update(Session.get('current_metric_m'), {$set : {collection : $('#metric_owner_change').val()}});
+		Session.set("current_metric_m", false);
 	}
 };
 
@@ -107,11 +135,11 @@ Template.modify.metrics = function() {
 	{
 		var mongo_query = '.*'+modify_query+'.*';
 		console.log(mongo_query);
-		return metric_library.find({ metric_name : {$regex : mongo_query, $options : 'i'}}, {$sort : {metric_name : 1}});
+		return metric_library.find({creator : Meteor.userId(), metric_name : {$regex : mongo_query, $options : 'i'}}, {$sort : {metric_name : 1}});
 	}
 	else
 	{
-		return metric_library.find({}, {$sort : {metric_name : 1}});
+		return metric_library.find({creator : Meteor.userId()}, {$sort : {metric_name : 1}});
 	}	
 }
 
@@ -127,5 +155,13 @@ Template.modify.metric_selected = function() {
 Template.selected_metric.metric_selected = function() {
 	//return the metric document matching the selected metric
 	return metric_library.find({_id : Session.get('current_metric_m')});
+}
+
+is_owner = function(user_id) {
+	return (Meteor.userId() === user_id);
+}
+
+Template.selected_metric.libraries = function() {
+	 return Session.get("my_groups");
 }
 
