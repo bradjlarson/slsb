@@ -86,10 +86,12 @@ Where the args are processed in order, with each transformation being applied to
 You can also set up default code to be placed before/after specific types of commands. For example, you could choose to place the SQL:
 
 *Before*
+
 	--drop table %table;
 	--help table %table;
 
 *After*
+
 	collect statistics on %table column(%indices);
 
 Before and after all of your CREATE TABLE (and ADD METRIC, CHAIN) commands, to allow for easier debugging, modification, and better efficiency. 
