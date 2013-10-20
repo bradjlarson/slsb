@@ -45,7 +45,32 @@ for (col in all_data)
 Session.set("export_flag", false);	
 }
 
-function add_to_export(col_name, objs) {
+export_db = function(database) {
+	var databases_rx = databases.find({database_name : database}).fetch();
+	var tables_rx = tables.find({database_name : database}).fetch();
+	var columns_rx = columns.find({database_name : database}).fetch();
+	var collections = {};
+	collections['databases'] = {col_name : "databases", objs : databases_rx};
+	collections['tables'] = {col_name : "tables", objs : tables_rx};
+	collections['columns'] = {col_name : "columns", objs : columns_rx};
+	var all_data = collections; 
+	if (Session.get("export_flag"))
+	{
+		clear_export();
+		//add_to_export(all_data[col].col_name, all_data[col].objs);
+	}
+	for (col in all_data)
+	{
+		if (Session.get("export_flag"))
+		{
+			//clear_export();
+			add_to_export(all_data[col].col_name, all_data[col].objs);
+		}
+	}
+	Session.set("export_flag", false);	
+}
+
+add_to_export = function(col_name, objs) {
 	for (obj in objs) 
 	{
 		delete objs[obj]['_id'];
@@ -56,7 +81,7 @@ function add_to_export(col_name, objs) {
 	//Session.set("export_flag", false);
 }
 
-function clear_export() {
+clear_export = function() {
 	var docs = export_docs.find().forEach(function(doc) {
 		export_docs.remove(doc['_id']);
 	});

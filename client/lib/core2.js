@@ -483,7 +483,7 @@ from = function(where) {
 conditions = function(how, table) {
 	if(truthy(how))
 	{
-		var clauses = extract("sub_args", text_swap(how, "<user_table>", table););
+		var clauses = extract("sub_args", text_swap(how, "<user_table>", table));
 		return is_empty(_.without(clauses, "")) ? "" : tostring(first_rest("WHERE ", "AND ", _.without(clauses, ""), "special"));
 	}
 	else
@@ -764,6 +764,7 @@ process_block = function(block) {
 
 recompile = function(block_id, command_block) {
 	//This will update the SQL output for all of the blocks currently in your stack. 
+	//TODO: Need to update SLSB to ignore create_metric commands
 	var command = "";
 	var output = false;
 	command = compress(command_block);
