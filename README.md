@@ -1,4 +1,13 @@
-# _SQL EXTENSIONS:_
+# _ABOUT:_
+
+SLSB is an extension of the SQL framework. You should be able to use SQL normally, but with additional functionality. The main things this extension implements are:
+- The ability to store/access "metrics", which are essentially a predefined set of instructions to retrieve a set of columns from a set of rows, and then append those columns to an another set of rows (existing or derived).  
+- FOR EACH functionality, similar to that found in other programming languages
+- CHAIN commands, which allows you to easily combine several metrics
+- Shortened function syntax
+- Ability to dynamically add additional sql, based on the commands you enter. 
+
+The below represents the syntax as it is likely to evolve. The current syntax is an alternative to SQL, but the project is moving away from an alternative, and towards an extension of SQL. 
 
 ## _COMMANDS:_
 
