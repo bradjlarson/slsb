@@ -149,4 +149,23 @@
 	  	<button type="button" class="close" data-dismiss="alert">&times;</button>
 	  	<strong>Please update your name and email first</strong>
 	</div>
+	{{/if}}
+	{{/isolate}}	
+		<label>My Libraries:</label>
+		<select multiple="multiple" class="uneditable-input span3" disabled>
+			{{#each libraries}}
+				<option value="{{this}}">{{this}}</option>
+			{{/each}}
+		</select>
+		<label>My userID:</label>
+		<input type="text" class="input uneditable-input span3" disabled value="{{user_id}}">
+	</form>			
+	</div>
 </template>
+
+<template name="join_org_error">
+	<div class="alert alert-error">
+	  	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	  	<strong>Please update your name and email first</strong>
+	</div>
+</template>	
